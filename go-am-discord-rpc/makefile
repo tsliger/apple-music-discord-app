@@ -12,6 +12,8 @@ all: build
 
 build: ${BINARY_DARWIN} ${BINARY_LINUX}
 	cp ${OUTPUT_DIR}/* ../src-tauri/binaries
+	rm ${BINARY_DARWIN}
+	rm ${BINARY_LINUX}
 
 ${BINARY_DARWIN}:
 	GOOS=darwin GOARCH=arm64 go build -o $@ .
