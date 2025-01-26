@@ -5,7 +5,7 @@ import "github.com/altfoxie/drpc"
 var client *drpc.Client
 var DISCORD_APP_ID string = "1332158263432708146"
 
-func setActivity(info CurrentTrack) {
+func setActivity(info CurrentTrack) error {
 	err := client.SetActivity(drpc.Activity{
 		State:   info.Artist,
 		Details: info.Title,
@@ -20,14 +20,12 @@ func setActivity(info CurrentTrack) {
 		},
 	})
 
-	if err != nil { /* handle error */
-	}
+	return err
 }
 
-func initializeDiscord() {
+func initializeDiscord() error {
 	var err error
 	client, err = drpc.New(DISCORD_APP_ID)
 
-	if err != nil {
-	}
+	return err
 }

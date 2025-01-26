@@ -9,13 +9,11 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-// var browser playwright.Browser
 var ctx context.Context
 var cancel context.CancelFunc
 
 func initializeScraper() {
 	ctx, cancel = chromedp.NewContext(context.Background())
-	// defer cancel()
 }
 
 func scrapeAlbumArt(artist string, album string) (string, error) {
@@ -36,7 +34,6 @@ func scrapeAlbumArt(artist string, album string) (string, error) {
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(searchURL),
 		chromedp.WaitVisible(".artwork-component"),
-		// chromedp.Nodes(".artwork-component > picture > source", &nodes, chromedp.ByQueryAll),
 		chromedp.AttributeValue(".artwork-component > picture > source", "srcset", &urls, &ok, chromedp.ByQueryAll),
 	)
 	if err != nil {
@@ -54,6 +51,5 @@ func scrapeAlbumArt(artist string, album string) (string, error) {
 		fmt.Println("No .webp URLs found")
 	}
 
-	fmt.Println(url)
 	return url, nil
 }

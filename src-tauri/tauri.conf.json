@@ -14,7 +14,16 @@
       {
         "title": "apple-music-discord-app",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "visible": false,
+        "hiddenTitle": true,
+        "decorations": false,
+        "focus": false,
+        "transparent": false,
+        "resizable": false,
+        "alwaysOnTop": false,
+        "fullscreen": false,
+        "skipTaskbar": true
       }
     ],
     "security": {

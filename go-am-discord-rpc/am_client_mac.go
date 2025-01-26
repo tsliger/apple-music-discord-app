@@ -17,14 +17,12 @@ func poll() {
 	var previousState string
 
 	for {
-		// Get the current player state
 		currentState, err := getPlayerState()
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			break
 		}
 
-		// Trim any extra whitespace
 		currentState = strings.TrimSpace(currentState)
 
 		// Check if the state has changed
@@ -41,7 +39,7 @@ func poll() {
 			}
 		}
 
-		// Poll every second (adjust as needed)
+		// Poll every second
 		time.Sleep(1 * time.Second)
 	}
 }
@@ -126,7 +124,6 @@ func getPlayerState() (string, error) {
     `
 	cmd := exec.Command("osascript", "-e", script)
 
-	// Capture the output
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
