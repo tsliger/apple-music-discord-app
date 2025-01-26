@@ -1,0 +1,41 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/allegro/bigcache/v3"
+)
+
+var cache *bigcache.BigCache
+
+func CreateCache() {
+	cache, _ = bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
+}
+
+func SetUrlCache(artist string, album string, url string) {
+	cache_key := gen_key(artist, album)
+
+	err := cache.Set(cache_key, []byte(url))
+
+	if err != nil {
+		fmt.Println("Could not cache url")
+	}
+}
+
+func GetUrlFromCache(artist string, album string) (string, error) {
+	cache_key := gen_key(artist, album)
+
+	entry, err := cache.Get(cache_key)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(entry), nil
+}
+
+func gen_key(artist string, album string) string {
+	return artist + album
+}

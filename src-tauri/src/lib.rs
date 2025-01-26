@@ -7,22 +7,27 @@ use tauri::{
     Manager,
 };
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+use tauri::App;
+use tauri_plugin_shell::ShellExt;
+
+fn execute_polling(app: &mut App) {
+    let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap();
+    let (mut rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let show_i = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
-            let tray = TrayIconBuilder::new()
+            let _tray = TrayIconBuilder::new()
                 .menu(&menu)
                 .icon(app.default_window_icon().unwrap().clone())
                 .build(app)?;
+            execute_polling(app);
             Ok(())
         })
         .on_menu_event(|app, event| match event.id.as_ref() {
@@ -42,7 +47,7 @@ pub fn run() {
                 }
 
                 #[cfg(target_os = "macos")]
-                app.set_activation_policy(tauri::ActivationPolicy::Regular);
+                let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
             }
             _ => {
                 println!("menu item {:?} not handled", event.id);
@@ -58,12 +63,12 @@ pub fn run() {
                 // Hide the app from the dock (macOS specific)
                 #[cfg(target_os = "macos")]
                 let app = window.app_handle();
-                app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                let _ = app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             }
             _ => {}
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        // .invoke_handler(tauri::generate_handler![greet, execute])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
