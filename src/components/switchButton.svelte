@@ -1,5 +1,28 @@
+<script lang="ts">
+    import { enable, isEnabled, disable } from "@tauri-apps/plugin-autostart";
+    import { onMount } from "svelte";
+
+    let enabledState = true;
+    onMount(async () => {
+        enabledState = await isEnabled();
+    });
+
+    const setAutostart = async (event: MouseEvent) => {
+        event.preventDefault();
+
+        if ((await isEnabled()) == false) {
+            await enable();
+        } else {
+            await disable();
+        }
+
+        // update frontend state
+        enabledState = await isEnabled();
+    };
+</script>
+
 <label class="switch">
-    <input type="checkbox" />
+    <input type="checkbox" onclick={setAutostart} bind:checked={enabledState} />
     <span class="slider round"></span>
 </label>
 

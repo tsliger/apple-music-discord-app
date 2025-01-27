@@ -3,11 +3,11 @@
     import { onMount } from "svelte";
 
     // Prevent right click context menu from appearing
-    onMount(() => {
-        document.addEventListener("contextmenu", function (e) {
-            e.preventDefault();
-        });
-    });
+    // onMount(() => {
+    //     document.addEventListener("contextmenu", function (e) {
+    //         e.preventDefault();
+    //     });
+    // });
 </script>
 
 <main class="container">
