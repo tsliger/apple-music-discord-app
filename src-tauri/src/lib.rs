@@ -13,7 +13,7 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 fn execute_polling(app: &mut App) {
     let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap();
-    let (mut rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+    let (mut _rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
