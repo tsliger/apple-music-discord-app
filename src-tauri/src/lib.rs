@@ -9,6 +9,7 @@ use tauri::{
 use tauri::App;
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_shell::ShellExt;
+use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 fn execute_polling(app: &mut App) {
     let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap();
@@ -26,17 +27,22 @@ pub fn run() {
                 #[cfg(target_os = "macos")]
                 let _ = app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
-                let _tray = TrayIconBuilder::new()
-                    .icon(app.default_window_icon().unwrap().clone())
-                    .build(app)?;
                 let _ = app.handle().plugin(tauri_plugin_positioner::init());
-                tauri::tray::TrayIconBuilder::new()
+                TrayIconBuilder::new()
+                    .icon(app.default_window_icon().unwrap().clone())
                     .on_tray_icon_event(|tray_handle, event| {
                         tauri_plugin_positioner::on_tray_event(tray_handle.app_handle(), &event);
                     })
                     .build(app)?;
             }
             execute_polling(app);
+
+            let window = app.get_webview_window("main").unwrap();
+
+            #[cfg(target_os = "macos")]
+            apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(16.0))
+                .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+
             Ok(())
         })
         .on_tray_icon_event(|app, event| {
@@ -64,20 +70,15 @@ pub fn run() {
             }
         })
         .on_window_event(|window, event| match event {
-            // Hide window on close, prevent
-            tauri::WindowEvent::CloseRequested { api, .. } => {
-                api.prevent_close();
-                window.hide().unwrap();
-
-                // Hide the dock icon when the window is closed (macOS-specific)
-                // Hide the app from the dock (macOS specific)
-                #[cfg(target_os = "macos")]
-                let app = window.app_handle();
-                let _ = app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            tauri::WindowEvent::Focused(is_focused) => {
+                if !is_focused {
+                    window.hide().unwrap();
+                }
             }
             _ => {}
         })
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_process::init())
         // .invoke_handler(tauri::generate_handler![greet, execute])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

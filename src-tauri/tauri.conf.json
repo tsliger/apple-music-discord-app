@@ -12,23 +12,28 @@
   "app": {
     "windows": [
       {
-        "title": "apple-music-discord-app",
-        "width": 800,
-        "height": 600,
+        "fullscreen": false,
+        "height": 100,
+        "resizable": false,
+        "title": "menubar",
+        "width": 200,
         "visible": false,
         "hiddenTitle": true,
         "decorations": false,
+        "maximizable": false,
+        "minimizable": false,
         "focus": false,
-        "transparent": false,
-        "resizable": false,
-        "alwaysOnTop": false,
-        "fullscreen": false,
-        "skipTaskbar": true
+        "transparent": true,
+        "skipTaskbar": true,
+        "alwaysOnTop": true,
+        "shadow": true
       }
     ],
     "security": {
-      "csp": null
-    }
+      "csp": null,
+      "capabilities": ["default"]
+    },
+    "macOSPrivateApi": true
   },
   "bundle": {
     "active": true,
