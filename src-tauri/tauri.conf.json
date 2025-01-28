@@ -43,7 +43,12 @@
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/icon-dark.icns",
+      "icons/icon-dark.ico",
+      "icons/icon-dark_32x32.png",
+      "icons/icon-dark_128x128.png",
+      "icons/icon-dark_128x128@2x.png"
     ],
     "externalBin": ["binaries/go-am-discord-rpc"]
   }
