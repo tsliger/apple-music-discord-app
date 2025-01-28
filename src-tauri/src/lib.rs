@@ -3,17 +3,20 @@
 // use tauri::tray::TrayIconBuilder;
 use tauri::{
     tray::{MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager,
+    AppHandle, Manager,
 };
 
-use tauri::App;
+use std::sync::{Arc, Mutex};
 use tauri_plugin_positioner::{Position, WindowExt};
+use tauri_plugin_shell::process::CommandChild;
 use tauri_plugin_shell::ShellExt;
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
-fn execute_polling(app: &mut App) {
+fn execute_polling(app: &AppHandle) -> CommandChild {
     let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap();
-    let (mut _rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+    let (mut _rx, child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+
+    return child;
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -39,9 +42,31 @@ pub fn run() {
                     })
                     .build(app)?;
             }
-            execute_polling(app);
+
+            let app_handle = app.app_handle();
+            let child_proc = execute_polling(app_handle);
+
+            // Wrap the child process in Arc<Mutex<>> for shared access
+            let child = Arc::new(Mutex::new(Some(child_proc)));
+
+            // Clone the Arc to move into the async task
+            let child_clone = Arc::clone(&child);
 
             let window = app.get_webview_window("main").unwrap();
+            window.on_window_event(move |event| {
+                if matches!(
+                    event,
+                    tauri::WindowEvent::CloseRequested { .. }
+                        | tauri::WindowEvent::Destroyed { .. }
+                ) {
+                    let mut child_lock = child_clone.lock().unwrap();
+                    if let Some(child_process) = child_lock.take() {
+                        if let Err(e) = child_process.kill() {
+                            eprintln!("Failed to kill child process: {}", e);
+                        }
+                    }
+                }
+            });
 
             #[cfg(target_os = "macos")]
             apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(16.0))
