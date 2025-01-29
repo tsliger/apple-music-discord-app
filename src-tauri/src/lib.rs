@@ -2,11 +2,12 @@
 
 // use tauri::tray::TrayIconBuilder;
 use tauri::{
+    command,
     tray::{MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager,
 };
 
-use std::sync::{Arc, Mutex};
+use reqwest::header::USER_AGENT;
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_shell::process::CommandChild;
 use tauri_plugin_shell::ShellExt;
@@ -17,6 +18,30 @@ fn execute_polling(app: &AppHandle) -> CommandChild {
     let (mut _rx, child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
 
     return child;
+}
+
+#[command]
+async fn call_kill_api() -> Result<String, String> {
+    // The URL of the kill endpoint (replace with your actual URL)
+    let request_url = "http://localhost:8080/kill";
+
+    let client = reqwest::Client::new();
+    let response = client
+        .get(request_url)
+        .header(USER_AGENT, "rust-web-api-client")
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if response.status().is_success() {
+        Ok("Process killed successfully.".into())
+    } else {
+        // Return an error message as a String
+        Err(format!(
+            "Failed to call kill endpoint: {}",
+            response.status()
+        ))
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -44,29 +69,8 @@ pub fn run() {
             }
 
             let app_handle = app.app_handle();
-            let child_proc = execute_polling(app_handle);
-
-            // Wrap the child process in Arc<Mutex<>> for shared access
-            let child = Arc::new(Mutex::new(Some(child_proc)));
-
-            // Clone the Arc to move into the async task
-            let child_clone = Arc::clone(&child);
-
             let window = app.get_webview_window("main").unwrap();
-            window.on_window_event(move |event| {
-                if matches!(
-                    event,
-                    tauri::WindowEvent::CloseRequested { .. }
-                        | tauri::WindowEvent::Destroyed { .. }
-                ) {
-                    let mut child_lock = child_clone.lock().unwrap();
-                    if let Some(child_process) = child_lock.take() {
-                        if let Err(e) = child_process.kill() {
-                            eprintln!("Failed to kill child process: {}", e);
-                        }
-                    }
-                }
-            });
+            let _child_proc = execute_polling(app_handle);
 
             #[cfg(target_os = "macos")]
             apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(16.0))
@@ -108,7 +112,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
-        // .invoke_handler(tauri::generate_handler![greet, execute])
+        .invoke_handler(tauri::generate_handler![call_kill_api])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
