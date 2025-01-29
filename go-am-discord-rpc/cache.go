@@ -11,7 +11,7 @@ import (
 var cache *bigcache.BigCache
 
 func CreateCache() {
-	cache, _ = bigcache.New(context.Background(), bigcache.DefaultConfig(10*time.Minute))
+	cache, _ = bigcache.New(context.Background(), bigcache.DefaultConfig(30*time.Minute))
 }
 
 func SetUrlCache(artist string, album string, url string) {

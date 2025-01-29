@@ -2,67 +2,139 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var currentTrack CurrentTrack
-var playingTrack string
+var cancelPrevious context.CancelFunc
 
 func poll() {
-	var previousState string
-
 	for {
-		currentState, err := getPlayerState()
+		playingState, event, err := eventDetector()
+
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			break
+			// Clear out on error?
+			continue
 		}
 
-		currentState = strings.TrimSpace(currentState)
+		// Call event handler
+		eventHandler(event, playingState)
 
-		// Check if the state has changed
-		if currentState != previousState {
-			fmt.Printf("State changed: %s\n", currentState)
-			previousState = currentState
-		}
-
-		if currentState != "paused" {
-			currTrack, err := getCurrentTrack()
-
-			if err == nil {
-				setActivity(currTrack)
-			}
-		}
-
-		// Poll every second
 		time.Sleep(1 * time.Second)
 	}
 }
 
-func getCurrentTrack() (CurrentTrack, error) {
+func eventHandler(event MusicEvent, state PlayerState) {
+	// Set activity based off event changes
+	if event.noTrackPlaying {
+		state.Url = "https://static-00.iconduck.com/assets.00/apple-music-icon-1024x1024-zncv5jwr.png"
+	}
+
+	if event.stateChanged || event.playheadChanged || event.songChanged {
+		setDiscordActivity(state)
+	}
+}
+
+func getAlbumArtUrl(state PlayerState) (string, error) {
+	cachedUrl, err := GetUrlFromCache(state.Artist, state.Album)
+
+	// Cache hit
+	if err == nil {
+		return cachedUrl, nil
+	}
+
+	// Scrape and insert into cache
+	state.Url, err = scrapeAlbumArt(state.Artist, state.Album)
+
+	if err != nil {
+		// Set to default art
+		state.Url = "https://static-00.iconduck.com/assets.00/apple-music-icon-1024x1024-zncv5jwr.png"
+	}
+
+	SetUrlCache(state.Artist, state.Album, state.Url)
+
+	return state.Url, nil
+}
+
+var previousState PlayerState
+
+func NewEvent() MusicEvent {
+	return MusicEvent{false, false, false, false}
+}
+
+func eventDetector() (PlayerState, MusicEvent, error) {
+	currentState, err := getPlayerState()
+
+	if err != nil {
+		return PlayerState{}, MusicEvent{}, err
+	}
+
+	event := NewEvent()
+
+	// Detect song change
+	didChange := previousState.Title != currentState.Title && previousState.Artist != currentState.Artist && previousState.Album != currentState.Album
+	if didChange {
+		event.songChanged = true
+	}
+
+	// Detect song state change
+	stateChanged := previousState.State != currentState.State
+	if stateChanged {
+		event.stateChanged = true
+	}
+
+	// Detect change in track player location
+	playheadMoved := previousState.Playtime.Sub(currentState.Playtime).Abs().Seconds() > 1
+	if playheadMoved {
+		event.playheadChanged = true
+	}
+
+	// Detect if no track is playing
+	if strings.TrimSpace(strings.ToLower(currentState.Title)) == "no track playing" {
+		event.noTrackPlaying = true
+	} else {
+		event.noTrackPlaying = false
+	}
+
+	previousState = currentState
+
+	return currentState, event, nil
+}
+
+func getPlayerState() (PlayerState, error) {
 	script := `
-	tell application "Music"
-	    set currentTrack to current track
-	    set trackName to name of currentTrack
-	    set artistName to artist of currentTrack
-	    set albumName to album of currentTrack
-	    set playheadTime to player position
-	    set endTime to duration of currentTrack
-	end tell
+	set jsonResult to ""
+	try
+	    tell application "Music"
+	        if player state is not stopped then
+	            set playerState to player state
+	            set playheadTime to player position
+	            set trackName to name of current track
+	            set artistName to artist of current track
+	            set albumName to album of current track
+	        else
+	            set playerState to "stopped"
+	            set playheadTime to 0
+	            set trackName to "No track playing"
+	            set artistName to "No artist"
+	            set albumName to "No album"
+	        end if
+	    end tell
 
-	set playheadTimeFormatted to (playheadTime as string)
-	set endTimeFormatted to (endTime as string)
+	    set playheadTimeFormatted to (playheadTime as string)
 
-	set jsonResult to "{ \"track_name\": \"" & trackName & "\", " & ¬
-	    "\"artist_name\": \"" & artistName & "\", " & ¬
-	    "\"album_name\": \"" & albumName & "\", " & ¬
-		"\"playhead_time\": \"" & playheadTimeFormatted & "\", " & ¬
-	    "\"end_time\": \"" & endTimeFormatted & "\" }"
+	    set jsonResult to "{ \"track_name\": \"" & trackName & "\", " & ¬
+	        "\"artist_name\": \"" & artistName & "\", " & ¬
+	        "\"album_name\": \"" & albumName & "\", " & ¬
+	        "\"player_state\": \"" & playerState & "\", " & ¬
+	        "\"playhead_time\": \"" & playheadTimeFormatted & "\" }"
+	on error errMsg
+	    set jsonResult to "{ \"error\": \"" & errMsg & "\" }"
+	end try
 
 	return jsonResult
     `
@@ -74,66 +146,38 @@ func getCurrentTrack() (CurrentTrack, error) {
 	err := cmd.Run()
 
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return CurrentTrack{}, err
+		return PlayerState{}, err
 	}
 
+	var parsedTrack PlayerState
 	output := strings.TrimSpace(out.String())
-	err = json.Unmarshal([]byte(output), &currentTrack)
+	err = json.Unmarshal([]byte(output), &parsedTrack)
 
 	if err != nil {
-		fmt.Println("failed to unmarshal json")
+		return PlayerState{}, err
 	}
 
-	currentTrack.Playtime, _ = getPlayheadTime(currentTrack.Playhead)
-
-	currTrack := currentTrack.Title + " by " + currentTrack.Artist
-
-	if currTrack != playingTrack {
-		playingTrack = currTrack
-		fmt.Println(playingTrack)
-
-		// Grab album art from cache or scrape
-		cached_url, err := GetUrlFromCache(currentTrack.Artist, currentTrack.Album)
-
-		if err == nil {
-			currentTrack.Url = cached_url
-		} else {
-			scraped_url, err := scrapeAlbumArt(currentTrack.Artist, currentTrack.Album)
-
-			// use default url
-			if err != nil {
-
-			} else {
-				// Set cache to scraped url
-				SetUrlCache(currentTrack.Artist, currentTrack.Album, scraped_url)
-				currentTrack.Url = scraped_url
-			}
-		}
-	}
-
-	return currentTrack, nil
-}
-
-func getPlayerState() (string, error) {
-	// AppleScript to get the player state
-	script := `
-        tell application "Music"
-            return player state as string
-        end tell
-    `
-	cmd := exec.Command("osascript", "-e", script)
-
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
+	// Convert playhead time
+	parsedTrack.Playtime, err = getPlayheadTime(parsedTrack.Playhead)
 
 	if err != nil {
-		return "", err
+		return PlayerState{}, err
 	}
 
-	// Return the trimmed player state
-	return out.String(), nil
+	if strings.TrimSpace(parsedTrack.State) == "playing" {
+		parsedTrack.isPlaying = true
+	} else {
+		parsedTrack.isPlaying = false
+	}
+
+	// Grab URL
+	albumUrl, err := getAlbumArtUrl(parsedTrack)
+
+	if err == nil {
+		parsedTrack.Url = albumUrl
+	}
+
+	return parsedTrack, nil
 }
 
 func getPlayheadTime(time_float string) (time.Time, error) {
