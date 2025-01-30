@@ -66,6 +66,7 @@ checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
 name = "apple-music-discord-app"
 version = "0.1.0"
 dependencies = [
+ "regex",
  "reqwest",
  "serde",
  "serde_json",
@@ -76,6 +77,7 @@ dependencies = [
  "tauri-plugin-positioner",
  "tauri-plugin-process",
  "tauri-plugin-shell",
+ "tokio",
  "window-vibrancy",
 ]
 
@@ -1136,6 +1138,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dff15bf788c671c1934e366d07e30c1814a8ef514e1af724a602e8a2fbe1b10"
 dependencies = [
  "futures-core",
+ "futures-sink",
 ]
 
 [[package]]
@@ -3236,6 +3239,7 @@ dependencies = [
  "base64 0.22.1",
  "bytes",
  "encoding_rs",
+ "futures-channel",
  "futures-core",
  "futures-util",
  "h2",

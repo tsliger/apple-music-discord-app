@@ -3,11 +3,19 @@ package amclient
 import "github.com/altfoxie/drpc"
 
 var client *drpc.Client
-var DISCORD_APP_ID string = "1332158263432708146"
+
+const DISCORD_APP_ID = "1332158263432708146"
 
 func setDiscordActivity(info PlayerState) error {
 	// when album name is 1 character, there is an issue with drpc causing the activity to not be set
 	info.Album += "      "
+
+	var smallImg string
+	if info.isPlaying {
+		smallImg = "https://i.ibb.co/5gW2VJLX/play.png"
+	} else {
+		smallImg = "https://i.ibb.co/RTC7L0zK/pause.png"
+	}
 
 	var err error
 	if info.isPlaying {
@@ -21,7 +29,7 @@ func setDiscordActivity(info PlayerState) error {
 				LargeImage: info.Url,
 				LargeText:  info.Album,
 				SmallText:  "",
-				SmallImage: "https://static-00.iconduck.com/assets.00/apple-music-icon-1024x1024-zncv5jwr.png",
+				SmallImage: smallImg,
 			},
 		})
 	} else {
@@ -32,7 +40,7 @@ func setDiscordActivity(info PlayerState) error {
 				LargeImage: info.Url,
 				LargeText:  info.Album,
 				SmallText:  "",
-				SmallImage: "https://static-00.iconduck.com/assets.00/apple-music-icon-1024x1024-zncv5jwr.png",
+				SmallImage: smallImg,
 			},
 		})
 	}

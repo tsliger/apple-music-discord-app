@@ -1,13 +1,10 @@
 package amclient
 
 import (
-	"fmt"
 	"sync"
 )
 
 func NewClient() {
-	fmt.Println("Initializing...")
-
 	var wg sync.WaitGroup
 	wg.Add(3)
 

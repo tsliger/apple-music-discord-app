@@ -22,8 +22,6 @@ func pollingProcess() {
 			fmt.Println("Process was cancelled.")
 			return
 		default:
-			// Simulate some ongoing work
-			fmt.Println("Process is running...")
 			amclient.Poll()
 			time.Sleep(1 * time.Second)
 		}
@@ -33,6 +31,16 @@ func pollingProcess() {
 func main() {
 	// Initialize client
 	amclient.NewClient()
+
+	var pString string
+	_, err := fmt.Scan(&pString)
+
+	if err != nil {
+		fmt.Errorf("Failed to parse port: %s", err.Error())
+		os.Exit(0)
+	}
+
+	port := ":" + pString
 
 	r := gin.Default()
 
@@ -54,7 +62,12 @@ func main() {
 		}
 	})
 
-	r.Run()
+	err = r.Run(port)
+
+	if err != nil {
+		cancel()
+		os.Exit(0)
+	}
 
 	defer cancel()
 }
