@@ -29,6 +29,9 @@ func pollingProcess() {
 }
 
 func main() {
+	// Init on termination signal detection
+	CreateTerminator()
+
 	// Initialize client
 	amclient.NewClient()
 
@@ -36,7 +39,7 @@ func main() {
 	_, err := fmt.Scan(&pString)
 
 	if err != nil {
-		fmt.Errorf("Failed to parse port: %s", err.Error())
+		fmt.Println("Exiting due to port parsing issue.")
 		os.Exit(0)
 	}
 
@@ -70,4 +73,8 @@ func main() {
 	}
 
 	defer cancel()
+}
+
+func EndPolling() {
+	cancel()
 }

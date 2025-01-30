@@ -5,6 +5,8 @@ import "github.com/altfoxie/drpc"
 var client *drpc.Client
 
 const DISCORD_APP_ID = "1332158263432708146"
+const playImage = "https://i.ibb.co/5gW2VJLX/play.png"
+const pauseImage = "https://i.ibb.co/RTC7L0zK/pause.png"
 
 func setDiscordActivity(info PlayerState) error {
 	// when album name is 1 character, there is an issue with drpc causing the activity to not be set
@@ -12,9 +14,9 @@ func setDiscordActivity(info PlayerState) error {
 
 	var smallImg string
 	if info.isPlaying {
-		smallImg = "https://i.ibb.co/5gW2VJLX/play.png"
+		smallImg = playImage
 	} else {
-		smallImg = "https://i.ibb.co/RTC7L0zK/pause.png"
+		smallImg = pauseImage
 	}
 
 	var err error
