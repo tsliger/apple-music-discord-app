@@ -12,10 +12,6 @@ import (
 var ctx context.Context
 var cancel context.CancelFunc
 
-func initializeScraper() {
-	// ctx, cancel = chromedp.NewContext(context.Background())
-}
-
 func scrapeAlbumArt(artist string, album string) (string, error) {
 	ctx, cancel = chromedp.NewContext(
 		context.Background(),
@@ -59,6 +55,6 @@ func scrapeAlbumArt(artist string, album string) (string, error) {
 	return url, nil
 }
 
-func CleanScraper() {
+func cleanScraper() {
 	cancel()
 }

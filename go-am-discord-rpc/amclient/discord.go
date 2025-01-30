@@ -4,11 +4,11 @@ import "github.com/altfoxie/drpc"
 
 var client *drpc.Client
 
-const DISCORD_APP_ID = "1332158263432708146"
+const discord_APP_ID = "1332158263432708146"
 const playImage = "https://i.ibb.co/5gW2VJLX/play.png"
 const pauseImage = "https://i.ibb.co/RTC7L0zK/pause.png"
 
-func setDiscordActivity(info PlayerState) error {
+func setDiscordActivity(info playerState) error {
 	// when album name is 1 character, there is an issue with drpc causing the activity to not be set
 	info.Album += "      "
 
@@ -52,11 +52,11 @@ func setDiscordActivity(info PlayerState) error {
 
 func initializeDiscord() error {
 	var err error
-	client, err = drpc.New(DISCORD_APP_ID)
+	client, err = drpc.New(discord_APP_ID)
 
 	return err
 }
 
-func CloseDiscordClient() {
+func closeDiscordClient() {
 	client.Close()
 }

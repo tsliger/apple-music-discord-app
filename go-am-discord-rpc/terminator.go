@@ -6,25 +6,19 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
-func CreateTerminator() {
+func createTerminator() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
 		sig := <-sigChan
 		fmt.Printf("Received signal: %s\n", sig)
-
 		fmt.Println("Running cleanup tasks...")
 
-		time.Sleep(1 * time.Second)
-
 		// Clean functions
-		amclient.CleanScraper()
-		amclient.CloseDiscordClient()
-		EndPolling()
+		amclient.CloseClient()
 
 		fmt.Println("Cleanup completed. Exiting now.")
 		os.Exit(0)

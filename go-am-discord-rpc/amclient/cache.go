@@ -10,11 +10,11 @@ import (
 
 var cache *bigcache.BigCache
 
-func CreateCache() {
+func createCache() {
 	cache, _ = bigcache.New(context.Background(), bigcache.DefaultConfig(30*time.Minute))
 }
 
-func SetUrlCache(artist string, album string, url string) {
+func setUrlCache(artist string, album string, url string) {
 	cache_key := gen_key(artist, album)
 
 	err := cache.Set(cache_key, []byte(url))
@@ -24,7 +24,7 @@ func SetUrlCache(artist string, album string, url string) {
 	}
 }
 
-func GetUrlFromCache(artist string, album string) (string, error) {
+func getUrlFromCache(artist string, album string) (string, error) {
 	cache_key := gen_key(artist, album)
 
 	entry, err := cache.Get(cache_key)

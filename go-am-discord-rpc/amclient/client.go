@@ -6,16 +6,11 @@ import (
 
 func NewClient() {
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(2)
 
 	go func() {
 		defer wg.Done()
-		CreateCache()
-	}()
-
-	go func() {
-		defer wg.Done()
-		initializeScraper()
+		createCache()
 	}()
 
 	go func() {
@@ -24,4 +19,9 @@ func NewClient() {
 	}()
 
 	wg.Wait()
+}
+
+func CloseClient() {
+	closeDiscordClient()
+	cleanScraper()
 }

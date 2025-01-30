@@ -25,7 +25,7 @@ func Poll() {
 	time.Sleep(1 * time.Second)
 }
 
-func eventHandler(event MusicEvent, state PlayerState) {
+func eventHandler(event musicEvent, state playerState) {
 	// Set activity based off event changes
 	if event.noTrackPlaying {
 		state.Url = "https://static-00.iconduck.com/assets.00/apple-music-icon-1024x1024-zncv5jwr.png"
@@ -36,8 +36,8 @@ func eventHandler(event MusicEvent, state PlayerState) {
 	}
 }
 
-func getAlbumArtUrl(state PlayerState) (string, error) {
-	cachedUrl, err := GetUrlFromCache(state.Artist, state.Album)
+func getAlbumArtUrl(state playerState) (string, error) {
+	cachedUrl, err := getUrlFromCache(state.Artist, state.Album)
 
 	// Cache hit
 	if err == nil {
@@ -52,25 +52,25 @@ func getAlbumArtUrl(state PlayerState) (string, error) {
 		state.Url = "https://static-00.iconduck.com/assets.00/apple-music-icon-1024x1024-zncv5jwr.png"
 	}
 
-	SetUrlCache(state.Artist, state.Album, state.Url)
+	setUrlCache(state.Artist, state.Album, state.Url)
 
 	return state.Url, nil
 }
 
-var previousState PlayerState
+var previousState playerState
 
-func NewEvent() MusicEvent {
-	return MusicEvent{false, false, false, false}
+func newEvent() musicEvent {
+	return musicEvent{false, false, false, false}
 }
 
-func eventDetector() (PlayerState, MusicEvent, error) {
+func eventDetector() (playerState, musicEvent, error) {
 	currentState, err := getPlayerState()
 
 	if err != nil {
-		return PlayerState{}, MusicEvent{}, err
+		return playerState{}, musicEvent{}, err
 	}
 
-	event := NewEvent()
+	event := newEvent()
 
 	// Detect song change
 	didChange := previousState.Title != currentState.Title && previousState.Artist != currentState.Artist && previousState.Album != currentState.Album
@@ -102,7 +102,7 @@ func eventDetector() (PlayerState, MusicEvent, error) {
 	return currentState, event, nil
 }
 
-func getPlayerState() (PlayerState, error) {
+func getPlayerState() (playerState, error) {
 	script := `
 	set jsonResult to ""
 	try
@@ -143,22 +143,22 @@ func getPlayerState() (PlayerState, error) {
 	err := cmd.Run()
 
 	if err != nil {
-		return PlayerState{}, err
+		return playerState{}, err
 	}
 
-	var parsedTrack PlayerState
+	var parsedTrack playerState
 	output := strings.TrimSpace(out.String())
 	err = json.Unmarshal([]byte(output), &parsedTrack)
 
 	if err != nil {
-		return PlayerState{}, err
+		return playerState{}, err
 	}
 
 	// Convert playhead time
 	parsedTrack.Playtime, err = getPlayheadTime(parsedTrack.Playhead)
 
 	if err != nil {
-		return PlayerState{}, err
+		return playerState{}, err
 	}
 
 	if strings.TrimSpace(parsedTrack.State) == "playing" {

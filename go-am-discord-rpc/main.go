@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,43 +17,40 @@ func pollingProcess() {
 	for {
 		select {
 		case <-ctx.Done():
-			amclient.CloseDiscordClient()
+			amclient.CloseClient()
 			fmt.Println("Process was cancelled.")
 			return
 		default:
 			amclient.Poll()
-			time.Sleep(1 * time.Second)
 		}
 	}
 }
 
 func main() {
 	// Init on termination signal detection
-	CreateTerminator()
+	createTerminator()
 
 	// Initialize client
 	amclient.NewClient()
+	ctx, cancel = context.WithCancel(context.Background())
 
 	var pString string
 	_, err := fmt.Scan(&pString)
 
 	if err != nil {
 		fmt.Println("Exiting due to port parsing issue.")
-		os.Exit(0)
+		AppExit()
 	}
 
 	port := ":" + pString
 
 	r := gin.Default()
 
-	ctx, cancel = context.WithCancel(context.Background())
-
 	go pollingProcess()
 
 	r.GET("/kill", func(c *gin.Context) {
 		if cancel != nil {
-			cancel()
-			os.Exit(0)
+			AppExit()
 			c.JSON(http.StatusOK, gin.H{
 				"message": "Killed process.",
 			})
@@ -68,13 +64,14 @@ func main() {
 	err = r.Run(port)
 
 	if err != nil {
-		cancel()
-		os.Exit(0)
+		AppExit()
 	}
 
 	defer cancel()
 }
 
-func EndPolling() {
+func AppExit() {
+	amclient.CloseClient()
 	cancel()
+	os.Exit(0)
 }

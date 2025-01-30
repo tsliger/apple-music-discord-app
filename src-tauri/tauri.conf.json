@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "apple-music-discord-app",
-  "version": "0.1.0",
+  "productName": "Apple Music Discord RPC",
+  "version": "0.8.0",
   "identifier": "com.apple-music-discord-app.app",
   "build": {
     "beforeDevCommand": "bun run dev",

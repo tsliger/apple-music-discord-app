@@ -2,7 +2,7 @@ package amclient
 
 import "time"
 
-type PlayerState struct {
+type playerState struct {
 	State     string `json:"player_state"`
 	Title     string `json:"track_name"`
 	Artist    string `json:"artist_name"`
@@ -13,7 +13,7 @@ type PlayerState struct {
 	isPlaying bool
 }
 
-type MusicEvent struct {
+type musicEvent struct {
 	songChanged     bool
 	stateChanged    bool
 	playheadChanged bool
