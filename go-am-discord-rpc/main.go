@@ -1,35 +1,73 @@
 package main
 
 import (
+	"am-discord-rpc/amclient"
+	"context"
 	"fmt"
-	"sync"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
+var ctx context.Context
+var cancel context.CancelFunc
+
+func pollingProcess() {
+	for {
+		select {
+		case <-ctx.Done():
+			amclient.CloseDiscordClient()
+			fmt.Println("Process was cancelled.")
+			return
+		default:
+			amclient.Poll()
+			time.Sleep(1 * time.Second)
+		}
+	}
+}
+
 func main() {
-	fmt.Println("Initializing...")
+	// Initialize client
+	amclient.NewClient()
 
-	var wg sync.WaitGroup
-	wg.Add(3)
+	var pString string
+	_, err := fmt.Scan(&pString)
 
-	go func() {
-		defer wg.Done()
-		CreateCache()
-	}()
+	if err != nil {
+		fmt.Errorf("Failed to parse port: %s", err.Error())
+		os.Exit(0)
+	}
 
-	go func() {
-		defer wg.Done()
-		initializeScraper()
-	}()
+	port := ":" + pString
 
-	go func() {
-		defer wg.Done()
-		initializeDiscord()
-	}()
+	r := gin.Default()
 
-	wg.Wait()
+	ctx, cancel = context.WithCancel(context.Background())
 
-	fmt.Println("Polling...")
-	poll()
+	go pollingProcess()
 
-	defer client.Close()
+	r.GET("/kill", func(c *gin.Context) {
+		if cancel != nil {
+			cancel()
+			os.Exit(0)
+			c.JSON(http.StatusOK, gin.H{
+				"message": "Killed process.",
+			})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "No process started.",
+			})
+		}
+	})
+
+	err = r.Run(port)
+
+	if err != nil {
+		cancel()
+		os.Exit(0)
+	}
+
+	defer cancel()
 }

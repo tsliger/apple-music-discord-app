@@ -1,27 +1,83 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-
-// use tauri::tray::TrayIconBuilder;
 use tauri::{
+    command,
     tray::{MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager,
+    AppHandle, Manager, State,
 };
 
-use std::sync::{Arc, Mutex};
+use std::net::TcpListener;
+use std::process::Command;
+use std::sync::Mutex;
 use tauri_plugin_positioner::{Position, WindowExt};
-use tauri_plugin_shell::process::CommandChild;
 use tauri_plugin_shell::ShellExt;
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
-fn execute_polling(app: &AppHandle) -> CommandChild {
-    let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap();
-    let (mut _rx, child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+#[derive(Default)]
+struct AppState {
+    endpoint: String,
+    go_child: u32,
+}
 
-    return child;
+fn kill_process(pid: &str) -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(unix)]
+    {
+        println!("Sending INT signal to process with PID: {}", pid);
+
+        let mut kill = Command::new("kill").args(["-s", "SIGINT", &pid]).spawn()?;
+        kill.wait()?;
+    }
+
+    #[cfg(windows)]
+    {
+        println!("Sending taskkill to process with PID: {}", pid);
+
+        let mut kill = StdCommand::new("taskkill")
+            .args(["/PID", &pid, "/F"])
+            .spawn()?;
+        kill.wait()?;
+    }
+
+    Ok(())
+}
+
+fn execute_polling(app: &AppHandle) {
+    let open_port = find_open_port().unwrap();
+
+    let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap();
+    let (mut _rx, mut child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+
+    // Send port number into std input
+    child.write(open_port.as_bytes()).unwrap();
+
+    let rest_endpoint = format!("http://localhost:{}/kill", open_port);
+
+    // Set state
+    let state = app.state::<Mutex<AppState>>();
+    let mut state = state.lock().unwrap();
+
+    state.endpoint = rest_endpoint;
+    state.go_child = child.pid();
+}
+
+fn find_open_port() -> Option<String> {
+    let listener = TcpListener::bind("127.0.0.1:0").ok()?;
+    let local_addr = listener.local_addr().ok()?;
+    Some(local_addr.port().to_string())
+}
+
+#[command]
+fn call_kill_api(state: State<'_, Mutex<AppState>>) {
+    let state = state.lock().unwrap();
+
+    let rest_endpoint = state.endpoint.to_string();
+
+    println!("{}", rest_endpoint);
+
+    let _response = reqwest::blocking::get(rest_endpoint);
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![]),
@@ -32,10 +88,10 @@ pub fn run() {
             #[cfg(desktop)]
             {
                 #[cfg(target_os = "macos")]
-                let _ = app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
                 let _ = app.handle().plugin(tauri_plugin_positioner::init());
-                let _ = TrayIconBuilder::new()
+                TrayIconBuilder::new()
                     .icon(app.default_window_icon().unwrap().clone())
                     .on_tray_icon_event(|tray_handle, event| {
                         tauri_plugin_positioner::on_tray_event(tray_handle.app_handle(), &event);
@@ -43,30 +99,11 @@ pub fn run() {
                     .build(app)?;
             }
 
+            app.manage(Mutex::new(AppState::default()));
+
             let app_handle = app.app_handle();
-            let child_proc = execute_polling(app_handle);
-
-            // Wrap the child process in Arc<Mutex<>> for shared access
-            let child = Arc::new(Mutex::new(Some(child_proc)));
-
-            // Clone the Arc to move into the async task
-            let child_clone = Arc::clone(&child);
-
             let window = app.get_webview_window("main").unwrap();
-            window.on_window_event(move |event| {
-                if matches!(
-                    event,
-                    tauri::WindowEvent::CloseRequested { .. }
-                        | tauri::WindowEvent::Destroyed { .. }
-                ) {
-                    let mut child_lock = child_clone.lock().unwrap();
-                    if let Some(child_process) = child_lock.take() {
-                        if let Err(e) = child_process.kill() {
-                            eprintln!("Failed to kill child process: {}", e);
-                        }
-                    }
-                }
-            });
+            execute_polling(app_handle);
 
             #[cfg(target_os = "macos")]
             apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(16.0))
@@ -104,11 +141,34 @@ pub fn run() {
                     window.hide().unwrap();
                 }
             }
+            tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed { .. } => {
+                let app = window.app_handle();
+                let state = app.state::<Mutex<AppState>>();
+                let state = state.lock().unwrap();
+
+                let temp = state.go_child.to_string();
+                println!("{}", temp);
+
+                let _ = kill_process(temp.as_str());
+            }
             _ => {}
         })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
-        // .invoke_handler(tauri::generate_handler![greet, execute])
-        .run(tauri::generate_context!())
+        .invoke_handler(tauri::generate_handler![call_kill_api])
+        .build(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    app.run(|app_handle, event| match event {
+        tauri::RunEvent::ExitRequested { .. } => {
+            let state = app_handle.state::<Mutex<AppState>>();
+            let state = state.lock().unwrap();
+
+            let temp = state.go_child.to_string();
+            println!("{}", temp);
+
+            let _ = kill_process(temp.as_str());
+        }
+        _ => {}
+    });
 }

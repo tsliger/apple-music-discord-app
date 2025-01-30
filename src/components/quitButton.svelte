@@ -1,8 +1,10 @@
 <script lang="ts">
     import { exit } from "@tauri-apps/plugin-process";
+    import { invoke } from "@tauri-apps/api/core";
 
     const quitApp = async () => {
-        await exit(0);
+        await invoke("call_kill_api", {});
+        await exit(1);
     };
 </script>
 
