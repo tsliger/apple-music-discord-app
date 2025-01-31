@@ -11,6 +11,7 @@ import (
 )
 
 var cancelPrevious context.CancelFunc
+var rate time.Duration = songPollingRate * time.Millisecond
 
 func Poll() {
 	playingState, event, err := eventDetector()
@@ -22,7 +23,7 @@ func Poll() {
 	// Call event handler
 	eventHandler(event, playingState)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(rate)
 }
 
 func eventHandler(event musicEvent, state playerState) {
