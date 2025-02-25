@@ -27,6 +27,8 @@ func pollingProcess() {
 }
 
 func main() {
+	amclient.CreateScraper()
+
 	// Init on termination signal detection
 	createTerminator()
 

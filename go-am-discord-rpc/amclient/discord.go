@@ -3,10 +3,13 @@ package amclient
 import "github.com/altfoxie/drpc"
 
 var client *drpc.Client
+var currentDiscordState playerState
 
 func setDiscordActivity(info playerState) error {
 	// when album name is 1 character, there is an issue with drpc causing the activity to not be set
 	info.Album += "      "
+
+	currentDiscordState = info
 
 	var smallImg string
 	if info.isPlaying {
