@@ -10,14 +10,15 @@ import (
 )
 
 var ctx context.Context
-var cancel context.CancelFunc
+var scraperCancel context.CancelFunc
 
-func scrapeAlbumArt(artist string, album string) (string, error) {
-	ctx, cancel = chromedp.NewContext(
+func CreateScraper() {
+	ctx, scraperCancel = chromedp.NewContext(
 		context.Background(),
 	)
-	defer cancel()
+}
 
+func scrapeAlbumArt(artist string, album string) (string, error) {
 	// Check if multiple artists are being listed by &
 	artists := strings.Split(artist, "&")
 	album = strings.ReplaceAll(album, "#", "")
@@ -56,5 +57,5 @@ func scrapeAlbumArt(artist string, album string) (string, error) {
 }
 
 func cleanScraper() {
-	cancel()
+	scraperCancel()
 }

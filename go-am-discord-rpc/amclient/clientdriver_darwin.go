@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -12,6 +13,8 @@ import (
 
 var cancelPrevious context.CancelFunc
 var rate time.Duration = songPollingRate * time.Millisecond
+var DataCtx context.Context
+var DataCancel context.CancelFunc
 
 func Poll() {
 	playingState, event, err := eventDetector()
@@ -32,8 +35,9 @@ func eventHandler(event musicEvent, state playerState) {
 		state.Url = "https://static-00.iconduck.com/assets.00/apple-music-icon-1024x1024-zncv5jwr.png"
 	}
 
-	if event.stateChanged || event.playheadChanged || event.songChanged {
+	if event.stateChanged || event.playheadChanged || event.songChanged || currentDiscordState == state {
 		setDiscordActivity(state)
+		fmt.Println(state)
 	}
 }
 
@@ -65,7 +69,14 @@ func newEvent() musicEvent {
 }
 
 func eventDetector() (playerState, musicEvent, error) {
-	currentState, err := getPlayerState()
+	if DataCancel != nil {
+		DataCancel()
+	}
+
+	DataCtx, DataCancel = context.WithCancel(context.Background())
+
+	currentState, err := getPlayerState(DataCtx)
+	defer DataCancel()
 
 	if err != nil {
 		return playerState{}, musicEvent{}, err
@@ -86,7 +97,7 @@ func eventDetector() (playerState, musicEvent, error) {
 	}
 
 	// Detect change in track player location
-	playheadMoved := previousState.Playtime.Sub(currentState.Playtime).Abs().Seconds() > 1
+	playheadMoved := previousState.Playtime.Sub(currentState.Playtime).Abs().Milliseconds() > 1000
 	if playheadMoved {
 		event.playheadChanged = true
 	}
@@ -103,7 +114,10 @@ func eventDetector() (playerState, musicEvent, error) {
 	return currentState, event, nil
 }
 
-func getPlayerState() (playerState, error) {
+func getPlayerState(ctx context.Context) (playerState, error) {
+	cliCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	script := `
 	set jsonResult to ""
 	try
@@ -137,7 +151,8 @@ func getPlayerState() (playerState, error) {
 	return jsonResult
     `
 
-	cmd := exec.Command("osascript", "-e", script)
+	// cmd := exec.Command("osascript", "-e", script)
+	cmd := exec.CommandContext(cliCtx, "osascript", "-e", script)
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
