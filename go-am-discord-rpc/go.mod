@@ -6,7 +6,7 @@ require (
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/chromedp/chromedp v0.12.1
 	github.com/gin-gonic/gin v1.10.0
-	github.com/tsliger/go-discord-rpc v0.1.0-beta
+	github.com/tsliger/go-discord-rpc v0.1.2-beta
 )
 
 require (
@@ -15,6 +15,7 @@ require (
 	github.com/chromedp/cdproto v0.0.0-20250210231439-aea867ea8506 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
+	github.com/deckarep/golang-set/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/gin-contrib/sse v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -37,6 +38,7 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.14.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
+	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect

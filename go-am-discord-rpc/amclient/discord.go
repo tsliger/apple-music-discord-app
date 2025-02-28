@@ -9,8 +9,11 @@ import (
 )
 
 var client *discordrpc.Client
+var currentPlayerState playerState
 
 func setDiscordActivity(info playerState) error {
+	fmt.Println(info)
+
 	var err error
 
 	floatVal, err := strconv.ParseFloat(info.TrackLength, 64)
@@ -23,29 +26,25 @@ func setDiscordActivity(info playerState) error {
 		fmt.Println("Error converting string to float:", err)
 	}
 
-	endTime := time.Now().Unix() + int64(floatVal) - int64(playHeadFloat)
+	endTime := time.Now().Unix() + int64(floatVal+0.5) - int64(playHeadFloat)
 
-	var data discordrpc.ActivityData
-	if info.isPlaying {
-		data = discordrpc.ActivityData{
-			State:   info.Artist,
-			Type:    discordrpc.LISTENTING_TYPE,
-			Details: info.Title,
-			Assets: discordrpc.ActivityAssets{
-				LargeImage: info.Url,
-				LargeText:  info.Album,
-				// SmallImage: smallImg,
-			},
-			Timestamps: discordrpc.ActivityTimestamp{
-				Start: int(info.Playtime.Unix()),
-				End:   int(endTime),
-			},
-		}
-	} else {
-		data = discordrpc.ActivityData{}
+	data := &discordrpc.ActivityData{
+		State:   info.Artist,
+		Type:    discordrpc.LISTENTING_TYPE,
+		Details: info.Title,
+		Assets: discordrpc.ActivityAssets{
+			LargeImage: info.Url,
+			LargeText:  info.Album,
+			// SmallImage: smallImg,
+		},
+		Timestamps: discordrpc.ActivityTimestamp{
+			Start: int64(info.Playtime.Unix()),
+			End:   int64(endTime),
+		},
 	}
 
 	client.SendActivity(data)
+	currentPlayerState = info
 
 	return err
 }

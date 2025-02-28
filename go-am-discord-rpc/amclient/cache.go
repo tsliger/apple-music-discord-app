@@ -2,6 +2,7 @@ package amclient
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -43,8 +44,14 @@ func loadCacheFile(filename string) error {
 	}
 
 	for key, value := range cacheData {
-		if byteValue, ok := value.([]byte); ok {
-			cache.Set(key, byteValue)
+		if byteString, ok := value.(string); ok {
+			decodedBytes, err := base64.StdEncoding.DecodeString(byteString)
+
+			fmt.Println(string(decodedBytes))
+
+			if err != nil {
+				cache.Set(key, decodedBytes)
+			}
 		}
 	}
 
@@ -57,7 +64,6 @@ func saveCacheFile(filename string) error {
 		return errors.New("Cache never loaded, won't overwrite previous cache.")
 	}
 
-	// keys := make(map[string]struct{})
 	cacheData := make(map[string]interface{})
 
 	iterator := cache.Iterator()
@@ -83,7 +89,7 @@ func saveCacheFile(filename string) error {
 	return nil
 }
 
-func setUrlCache(artist string, album string, url string) {
+func setUrlCache(artist string, album string, url string) error {
 	cache_key := gen_key(artist, album)
 
 	err := cache.Set(cache_key, []byte(url))
@@ -91,6 +97,8 @@ func setUrlCache(artist string, album string, url string) {
 	if err != nil {
 		fmt.Println("Could not cache url")
 	}
+
+	return err
 }
 
 func getUrlFromCache(artist string, album string) (string, error) {

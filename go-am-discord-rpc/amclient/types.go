@@ -19,4 +19,5 @@ type musicEvent struct {
 	stateChanged    bool
 	playheadChanged bool
 	noTrackPlaying  bool
+	albumArtUpdated bool
 }
