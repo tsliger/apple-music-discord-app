@@ -24,4 +24,5 @@ func NewClient() {
 func CloseClient() {
 	closeDiscordClient()
 	cleanScraper()
+	cleanCache()
 }

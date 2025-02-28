@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -35,9 +34,9 @@ func eventHandler(event musicEvent, state playerState) {
 		state.Url = "https://static-00.iconduck.com/assets.00/apple-music-icon-1024x1024-zncv5jwr.png"
 	}
 
-	if event.stateChanged || event.playheadChanged || event.songChanged || currentDiscordState == state {
+	//|| currentDiscordState == state
+	if event.stateChanged || event.playheadChanged || event.songChanged {
 		setDiscordActivity(state)
-		fmt.Println(state)
 	}
 }
 
@@ -128,12 +127,14 @@ func getPlayerState(ctx context.Context) (playerState, error) {
 	            set trackName to name of current track
 	            set artistName to artist of current track
 	            set albumName to album of current track
+				set trackLength to duration of current track
 	        else
 	            set playerState to "stopped"
 	            set playheadTime to 0
 	            set trackName to "No track playing"
 	            set artistName to "No artist"
 	            set albumName to "No album"
+				set trackLength to 0
 	        end if
 	    end tell
 
@@ -143,6 +144,7 @@ func getPlayerState(ctx context.Context) (playerState, error) {
 	        "\"artist_name\": \"" & artistName & "\", " & ¬
 	        "\"album_name\": \"" & albumName & "\", " & ¬
 	        "\"player_state\": \"" & playerState & "\", " & ¬
+			"\"track_length\": \"" & trackLength & "\", " & ¬
 	        "\"playhead_time\": \"" & playheadTimeFormatted & "\" }"
 	on error errMsg
 	    set jsonResult to "{ \"error\": \"" & errMsg & "\" }"

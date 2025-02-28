@@ -1,61 +1,62 @@
 package amclient
 
-import "github.com/altfoxie/drpc"
+import (
+	"fmt"
+	"strconv"
+	"time"
 
-var client *drpc.Client
-var currentDiscordState playerState
+	discordrpc "github.com/tsliger/go-discord-rpc"
+)
+
+var client *discordrpc.Client
 
 func setDiscordActivity(info playerState) error {
-	// when album name is 1 character, there is an issue with drpc causing the activity to not be set
-	info.Album += "      "
-
-	currentDiscordState = info
-
-	var smallImg string
-	if info.isPlaying {
-		smallImg = playImage
-	} else {
-		smallImg = pauseImage
-	}
-
 	var err error
-	if info.isPlaying {
-		err = client.SetActivity(drpc.Activity{
-			State:   info.Artist,
-			Details: info.Title,
-			Timestamps: &drpc.Timestamps{
-				Start: info.Playtime,
-			},
-			Assets: &drpc.Assets{
-				LargeImage: info.Url,
-				LargeText:  info.Album,
-				SmallText:  "",
-				SmallImage: smallImg,
-			},
-		})
-	} else {
-		err = client.SetActivity(drpc.Activity{
-			State:   info.Artist,
-			Details: info.Title,
-			Assets: &drpc.Assets{
-				LargeImage: info.Url,
-				LargeText:  info.Album,
-				SmallText:  "",
-				SmallImage: smallImg,
-			},
-		})
+
+	floatVal, err := strconv.ParseFloat(info.TrackLength, 64)
+	if err != nil {
+		fmt.Println("Error converting string to float:", err)
 	}
+
+	playHeadFloat, err := strconv.ParseFloat(info.Playhead, 64)
+	if err != nil {
+		fmt.Println("Error converting string to float:", err)
+	}
+
+	endTime := time.Now().Unix() + int64(floatVal) - int64(playHeadFloat)
+
+	var data discordrpc.ActivityData
+	if info.isPlaying {
+		data = discordrpc.ActivityData{
+			State:   info.Artist,
+			Type:    discordrpc.LISTENTING_TYPE,
+			Details: info.Title,
+			Assets: discordrpc.ActivityAssets{
+				LargeImage: info.Url,
+				LargeText:  info.Album,
+				// SmallImage: smallImg,
+			},
+			Timestamps: discordrpc.ActivityTimestamp{
+				Start: int(info.Playtime.Unix()),
+				End:   int(endTime),
+			},
+		}
+	} else {
+		data = discordrpc.ActivityData{}
+	}
+
+	client.SendActivity(data)
 
 	return err
 }
 
 func initializeDiscord() error {
 	var err error
-	client, err = drpc.New(discord_APP_ID)
+	client, err = discordrpc.NewClient(discord_APP_ID)
 
 	return err
 }
 
 func closeDiscordClient() {
-	client.Close()
+	client.CloseClient()
 }
