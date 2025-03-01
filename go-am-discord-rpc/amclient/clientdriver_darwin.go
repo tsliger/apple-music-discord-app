@@ -25,7 +25,7 @@ func Poll() {
 				continue
 			}
 
-			go eventHandler(event, playingState)
+			eventHandler(event, playingState)
 		}
 	}
 }
@@ -39,11 +39,14 @@ func eventHandler(event musicEvent, state playerState) {
 		state.Url = DEFAULT_ALBUM_URI
 	}
 
-	if (event.albumArtUpdated || event.stateChanged || event.songChanged || event.playheadChanged) && time.Since(start) >= DISCORD_RATE_DELAY*time.Millisecond {
-		if state != previousState {
-			setDiscordActivity(state)
-			previousState = state
-			start = time.Now()
+	if event.albumArtUpdated || event.stateChanged || event.songChanged || event.playheadChanged {
+		if time.Since(start) >= DISCORD_RATE_DELAY*time.Millisecond {
+
+			if state != previousState {
+				setDiscordActivity(state)
+				previousState = state
+			}
+			start = time.Now() // Update start only after the delay condition is met
 		}
 	}
 }

@@ -43,7 +43,12 @@ func setDiscordActivity(info playerState) error {
 		},
 	}
 
-	client.SendActivity(data)
+	err = client.SetActivity(data)
+
+	if err != nil {
+		fmt.Printf("Error setting: %v", err)
+	}
+
 	currentPlayerState = info
 
 	return err
