@@ -1,61 +1,71 @@
 package amclient
 
-import "github.com/altfoxie/drpc"
+import (
+	"fmt"
+	"strconv"
+	"time"
 
-var client *drpc.Client
-var currentDiscordState playerState
+	discordrpc "github.com/tsliger/go-discord-rpc"
+)
+
+var client *discordrpc.Client
+var currentPlayerState playerState
 
 func setDiscordActivity(info playerState) error {
-	// when album name is 1 character, there is an issue with drpc causing the activity to not be set
-	info.Album += "      "
+	currentPlayerState = info
 
-	currentDiscordState = info
-
-	var smallImg string
 	if info.isPlaying {
-		smallImg = playImage
-	} else {
-		smallImg = pauseImage
-	}
+		floatVal, err := strconv.ParseFloat(info.TrackLength, 64)
+		if err != nil {
+			fmt.Println("Error converting string to float:", err)
+		}
 
-	var err error
-	if info.isPlaying {
-		err = client.SetActivity(drpc.Activity{
+		playHeadFloat, err := strconv.ParseFloat(info.Playhead, 64)
+		if err != nil {
+			fmt.Println("Error converting string to float:", err)
+		}
+
+		endTime := time.Now().Unix() + int64(floatVal+0.5) - int64(playHeadFloat)
+
+		data := &discordrpc.ActivityData{
 			State:   info.Artist,
+			Type:    discordrpc.LISTENTING_TYPE,
 			Details: info.Title,
-			Timestamps: &drpc.Timestamps{
-				Start: info.Playtime,
-			},
-			Assets: &drpc.Assets{
+			Assets: discordrpc.ActivityAssets{
 				LargeImage: info.Url,
 				LargeText:  info.Album,
-				SmallText:  "",
-				SmallImage: smallImg,
 			},
-		})
+			Timestamps: discordrpc.ActivityTimestamp{
+				Start: int64(info.Playtime.Unix()),
+				End:   int64(endTime),
+			},
+		}
+
+		err = client.SetActivity(data)
+
+		if err != nil {
+			fmt.Printf("Error setting: %v", err)
+			return err
+		}
 	} else {
-		err = client.SetActivity(drpc.Activity{
-			State:   info.Artist,
-			Details: info.Title,
-			Assets: &drpc.Assets{
-				LargeImage: info.Url,
-				LargeText:  info.Album,
-				SmallText:  "",
-				SmallImage: smallImg,
-			},
-		})
+		data := &discordrpc.ActivityData{
+			Type:    discordrpc.LISTENTING_TYPE,
+			Details: "Paused",
+		}
+
+		client.SetActivity(data)
 	}
 
-	return err
+	return nil
 }
 
 func initializeDiscord() error {
 	var err error
-	client, err = drpc.New(discord_APP_ID)
+	client, err = discordrpc.NewClient(discord_APP_ID)
 
 	return err
 }
 
 func closeDiscordClient() {
-	client.Close()
+	client.CloseClient()
 }

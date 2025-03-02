@@ -19,6 +19,8 @@ func CreateScraper() {
 }
 
 func scrapeAlbumArt(artist string, album string) (string, error) {
+	var url string
+
 	// Check if multiple artists are being listed by &
 	artists := strings.Split(artist, "&")
 	album = strings.ReplaceAll(album, "#", "")
@@ -43,7 +45,6 @@ func scrapeAlbumArt(artist string, album string) (string, error) {
 	}
 
 	re := regexp.MustCompile(`https?://[^,\s]+\.webp`)
-	var url string
 
 	// Find the first match
 	matches := re.FindStringSubmatch(urls)
