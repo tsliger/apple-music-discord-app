@@ -2,6 +2,7 @@ package amclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -11,6 +12,8 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 )
+
+var cancelEvent context.CancelFunc
 
 func Poll() {
 	ticker := time.NewTicker(songPollingRate * time.Millisecond)
@@ -25,7 +28,7 @@ func Poll() {
 				continue
 			}
 
-			eventHandler(event, playingState)
+			go eventHandler(event, playingState)
 		}
 	}
 }
@@ -34,19 +37,31 @@ var previousState playerState
 var start time.Time = time.Now().Add(-DISCORD_RATE_DELAY * time.Millisecond)
 
 func eventHandler(event musicEvent, state playerState) {
-	// Set activity based off event changes
-	if event.noTrackPlaying {
-		state.Url = DEFAULT_ALBUM_URI
+	if cancelEvent != nil {
+		cancelEvent()
 	}
 
-	if event.albumArtUpdated || event.stateChanged || event.songChanged || event.playheadChanged {
-		if time.Since(start) >= DISCORD_RATE_DELAY*time.Millisecond {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancelEvent = cancel
 
-			if state != previousState {
-				setDiscordActivity(state)
-				previousState = state
+	select {
+	case <-ctx.Done():
+		fmt.Println("Work cancelled")
+		return
+	default:
+		// Set activity based off event changes
+		if event.noTrackPlaying {
+			state.Url = DEFAULT_ALBUM_URI
+		}
+
+		if event.albumArtUpdated || event.stateChanged || event.songChanged || event.playheadChanged {
+			if time.Since(start) >= DISCORD_RATE_DELAY*time.Millisecond {
+				if state != previousState {
+					setDiscordActivity(state)
+					previousState = state
+				}
+				start = time.Now()
 			}
-			start = time.Now() // Update start only after the delay condition is met
 		}
 	}
 }
@@ -73,7 +88,6 @@ func getAlbumArtUrl(state playerState) (string, error) {
 	if contains {
 		return DEFAULT_ALBUM_URI, nil
 	} else {
-		// q = append(q, state.Artist+state.Album)
 		set.Add(state.Artist + state.Album)
 		go func() {
 			albumArtUrl, err := scrapeAlbumArt(state.Artist, state.Album)

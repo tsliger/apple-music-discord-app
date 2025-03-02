@@ -6,7 +6,7 @@ require (
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/chromedp/chromedp v0.12.1
 	github.com/gin-gonic/gin v1.10.0
-	github.com/tsliger/go-discord-rpc v0.1.2-beta.0.20250301164824-d4cd6a4883f8
+	github.com/tsliger/go-discord-rpc v0.2.1-beta
 )
 
 require (

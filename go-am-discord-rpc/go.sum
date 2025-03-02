@@ -113,6 +113,8 @@ github.com/tsliger/go-discord-rpc v0.1.2-beta h1:kREO5UCe7PleBhZ8LSXKISwbEvWnHrI
 github.com/tsliger/go-discord-rpc v0.1.2-beta/go.mod h1:kFOiDV+IK3yq2E/kXDtAT0IvJYasZN3fwy3jqHWySDQ=
 github.com/tsliger/go-discord-rpc v0.1.2-beta.0.20250301164824-d4cd6a4883f8 h1:axM80clvQonvHtD3J1V7CxPtqo9qxSeEIebNtssWMpY=
 github.com/tsliger/go-discord-rpc v0.1.2-beta.0.20250301164824-d4cd6a4883f8/go.mod h1:tLLsHiTYbrpnxW2CYck5H2KLpVTbMxgWA3cXg+Bx9gg=
+github.com/tsliger/go-discord-rpc v0.2.1-beta h1:Gg1vMoYJHRb91jKlwXnE+DQ3cD5S/8OZC8+29U8UZs8=
+github.com/tsliger/go-discord-rpc v0.2.1-beta/go.mod h1:tLLsHiTYbrpnxW2CYck5H2KLpVTbMxgWA3cXg+Bx9gg=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65EE=

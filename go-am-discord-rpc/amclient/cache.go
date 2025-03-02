@@ -8,13 +8,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/allegro/bigcache/v3"
 )
 
 var cache *bigcache.BigCache
-var loadedCache bool = false
+var cacheMutex sync.Mutex
+
+// var loadedCache bool = false
 
 func createCache() {
 	cache, _ = bigcache.New(context.Background(), bigcache.DefaultConfig(30*time.Minute))
@@ -27,6 +30,7 @@ func createCache() {
 }
 
 func loadCacheFile(filename string) error {
+	cacheMutex.Lock()
 	if cache == nil {
 		return errors.New("Cache not initialized.")
 	}
@@ -43,35 +47,38 @@ func loadCacheFile(filename string) error {
 		return err
 	}
 
+	count := 0
 	for key, value := range cacheData {
 		if byteString, ok := value.(string); ok {
 			decodedBytes, err := base64.StdEncoding.DecodeString(byteString)
 
-			fmt.Println(string(decodedBytes))
-
-			if err != nil {
+			if err == nil {
 				cache.Set(key, decodedBytes)
+				count += 1
 			}
 		}
 	}
 
-	loadedCache = true
+	fmt.Printf("Loaded %d URIs from cache file.\n", count)
+
+	cacheMutex.Unlock()
 	return nil
 }
 
 func saveCacheFile(filename string) error {
-	if loadedCache == false {
-		return errors.New("Cache never loaded, won't overwrite previous cache.")
-	}
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
 
 	cacheData := make(map[string]interface{})
 
 	iterator := cache.Iterator()
+	count := 0
 	for iterator.SetNext() {
 		current, err := iterator.Value()
 
 		if err == nil {
 			cacheData[current.Key()] = current.Value()
+			count += 1
 		}
 	}
 
@@ -85,6 +92,8 @@ func saveCacheFile(filename string) error {
 	if err := encoder.Encode(cacheData); err != nil {
 		return fmt.Errorf("failed to encode cache data: %w", err)
 	}
+
+	fmt.Printf("Saved %d URIs to file.\n", count)
 
 	return nil
 }

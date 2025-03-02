@@ -12,46 +12,51 @@ var client *discordrpc.Client
 var currentPlayerState playerState
 
 func setDiscordActivity(info playerState) error {
-	fmt.Println(info)
-
-	var err error
-
-	floatVal, err := strconv.ParseFloat(info.TrackLength, 64)
-	if err != nil {
-		fmt.Println("Error converting string to float:", err)
-	}
-
-	playHeadFloat, err := strconv.ParseFloat(info.Playhead, 64)
-	if err != nil {
-		fmt.Println("Error converting string to float:", err)
-	}
-
-	endTime := time.Now().Unix() + int64(floatVal+0.5) - int64(playHeadFloat)
-
-	data := &discordrpc.ActivityData{
-		State:   info.Artist,
-		Type:    discordrpc.LISTENTING_TYPE,
-		Details: info.Title,
-		Assets: discordrpc.ActivityAssets{
-			LargeImage: info.Url,
-			LargeText:  info.Album,
-			// SmallImage: smallImg,
-		},
-		Timestamps: discordrpc.ActivityTimestamp{
-			Start: int64(info.Playtime.Unix()),
-			End:   int64(endTime),
-		},
-	}
-
-	err = client.SetActivity(data)
-
-	if err != nil {
-		fmt.Printf("Error setting: %v", err)
-	}
-
 	currentPlayerState = info
 
-	return err
+	if info.isPlaying {
+		floatVal, err := strconv.ParseFloat(info.TrackLength, 64)
+		if err != nil {
+			fmt.Println("Error converting string to float:", err)
+		}
+
+		playHeadFloat, err := strconv.ParseFloat(info.Playhead, 64)
+		if err != nil {
+			fmt.Println("Error converting string to float:", err)
+		}
+
+		endTime := time.Now().Unix() + int64(floatVal+0.5) - int64(playHeadFloat)
+
+		data := &discordrpc.ActivityData{
+			State:   info.Artist,
+			Type:    discordrpc.LISTENTING_TYPE,
+			Details: info.Title,
+			Assets: discordrpc.ActivityAssets{
+				LargeImage: info.Url,
+				LargeText:  info.Album,
+			},
+			Timestamps: discordrpc.ActivityTimestamp{
+				Start: int64(info.Playtime.Unix()),
+				End:   int64(endTime),
+			},
+		}
+
+		err = client.SetActivity(data)
+
+		if err != nil {
+			fmt.Printf("Error setting: %v", err)
+			return err
+		}
+	} else {
+		data := &discordrpc.ActivityData{
+			Type:    discordrpc.LISTENTING_TYPE,
+			Details: "Paused",
+		}
+
+		client.SetActivity(data)
+	}
+
+	return nil
 }
 
 func initializeDiscord() error {
