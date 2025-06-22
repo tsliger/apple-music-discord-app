@@ -5,17 +5,18 @@ go 1.23.1
 require (
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/chromedp/chromedp v0.12.1
+	github.com/deckarep/golang-set/v2 v2.7.0
 	github.com/gin-gonic/gin v1.10.0
-	github.com/tsliger/go-discord-rpc v0.2.1-beta
+	github.com/tsliger/go-discord-rpc v0.2.3-beta
 )
 
 require (
+	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/bytedance/sonic v1.12.8 // indirect
 	github.com/bytedance/sonic/loader v0.2.3 // indirect
 	github.com/chromedp/cdproto v0.0.0-20250210231439-aea867ea8506 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/deckarep/golang-set/v2 v2.7.0 // indirect
 	github.com/ebitengine/purego v0.8.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/gin-contrib/sse v1.0.0 // indirect
@@ -46,7 +47,6 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/arch v0.14.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect

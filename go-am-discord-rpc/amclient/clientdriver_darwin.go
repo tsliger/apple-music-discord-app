@@ -15,12 +15,15 @@ import (
 
 var cancelEvent context.CancelFunc
 
-func Poll() {
+func Poll(ctx context.Context) {
 	ticker := time.NewTicker(songPollingRate * time.Millisecond)
 	defer ticker.Stop()
 
 	for {
 		select {
+		case <-ctx.Done():
+			fmt.Println("Poll stopped")
+			return
 		case <-ticker.C:
 			playingState, event, err := eventDetector()
 

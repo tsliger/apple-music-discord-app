@@ -40,6 +40,7 @@ func scrapeAlbumArt(artist string, album string) (string, error) {
 		chromedp.WaitVisible(".artwork-component"),
 		chromedp.AttributeValue(".artwork-component > picture > source", "srcset", &urls, &ok, chromedp.ByQueryAll),
 	)
+
 	if err != nil {
 		fmt.Println("Error navigating to the website:", err)
 	}
@@ -48,6 +49,7 @@ func scrapeAlbumArt(artist string, album string) (string, error) {
 
 	// Find the first match
 	matches := re.FindStringSubmatch(urls)
+
 	if len(matches) > 0 {
 		url = strings.TrimSpace(matches[0])
 	} else {

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,67 +16,53 @@ import (
 var ctx context.Context
 var cancel context.CancelFunc
 
-func pollingProcess() {
-	for {
-		select {
-		case <-ctx.Done():
-			amclient.CloseClient()
-			fmt.Println("Process was cancelled.")
-			return
-		default:
-			amclient.Poll()
-		}
-	}
+func pollingProcess(ctx context.Context) {
+	amclient.Poll(ctx) // This runs until context is cancelled
+	fmt.Println("Polling process exited.")
 }
 
 func main() {
 	amclient.CreateScraper()
-
-	// Init on termination signal detection
-	createTerminator()
-
-	// Initialize client
 	amclient.NewClient()
+
 	ctx, cancel = context.WithCancel(context.Background())
+	defer cancel()
+
+	// Setup OS signal handling (Ctrl+C, SIGTERM)
+	go func() {
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+		<-sigCh
+		fmt.Println("\nReceived OS interrupt signal")
+		cancel()
+	}()
+
+	go pollingProcess(ctx)
 
 	var pString string
 	_, err := fmt.Scan(&pString)
-
 	if err != nil {
 		fmt.Println("Exiting due to port parsing issue.")
-		AppExit()
+		cancel()
+		return
 	}
 
 	port := ":" + pString
 
 	r := gin.Default()
 
-	go pollingProcess()
-
 	r.GET("/kill", func(c *gin.Context) {
-		if cancel != nil {
-			AppExit()
-			c.JSON(http.StatusOK, gin.H{
-				"message": "Killed process.",
-			})
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "No process started.",
-			})
-		}
+		cancel() // signal cancellation
+		c.JSON(http.StatusOK, gin.H{"message": "Killed process, shutting down..."})
 	})
 
-	err = r.Run(port)
-
-	if err != nil {
-		AppExit()
+	// Run Gin server in main goroutine
+	if err := r.Run(port); err != nil && err != http.ErrServerClosed {
+		fmt.Println("Gin server error:", err)
+		cancel()
 	}
 
-	defer cancel()
-}
-
-func AppExit() {
-	amclient.CloseClient()
-	cancel()
-	os.Exit(0)
+	// Wait a moment to allow goroutines to exit cleanly
+	time.Sleep(2 * time.Second)
+	fmt.Println("Exiting main")
 }
