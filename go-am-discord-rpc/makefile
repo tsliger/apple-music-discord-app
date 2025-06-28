@@ -17,11 +17,14 @@ ifeq ($(HOST_OS),windows)
 	@echo "Copying directory and exe on Windows only..."
 	@cmd /c copy /Y ".\windows-apple-music-info-x86_64-pc-windows-msvc.exe" "..\src-tauri\binaries\"
 	@cmd /c copy /Y "$(subst /,\,$(BINARY_WINDOWS_AMD64))" "..\src-tauri\binaries\"
+	@cmd /c del /Q "$(subst /,\,$(BINARY_WINDOWS_AMD64))"
 else ifeq ($(HOST_OS),darwin)
 	@echo "macOS detected — building all targets"
 	@$(MAKE) darwin
-	@cmd /c copy /Y "$(subst /,\,$(BINARY_DARWIN_ARM64))" "..\src-tauri\binaries\"
-	@cmd /c copy /Y "$(subst /,\,$(BINARY_DARWIN_AMD64))" "..\src-tauri\binaries\"
+	@cmd /c cp "$(subst /,\,$(BINARY_DARWIN_ARM64))" "..\src-tauri\binaries\"
+	@cmd /c cp "$(subst /,\,$(BINARY_DARWIN_AMD64))" "..\src-tauri\binaries\"
+	@cmd /c rm "$(subst /,\,$(BINARY_DARWIN_ARM64))"
+	@cmd /c rm "$(subst /,\,$(BINARY_DARWIN_AMD64))"
 else
 	@echo "Unsupported OS for Darwin cross-compilation — building Windows binary only"
 	@$(MAKE) windows-gnu

@@ -50,13 +50,12 @@
       "icons/icon-dark_128x128.png",
       "icons/icon-dark_128x128@2x.png"
     ],
-    "resources": ["dotnet/dotnet-runtime-8.0.17-win-x64.exe"],
+    "resources": ["dotnet/dotnet-runtime-8.0.17-win-x64.exe", "windows-apple-music-info.exe"],
     "windows": {
       "wix": {
         "template": "installer/wix/main.wxs"
-        
       }
     },
-    "externalBin": ["binaries/go-am-discord-rpc", "binaries/windows-apple-music-info"]
+    "externalBin": ["binaries/go-am-discord-rpc"]
   }
 }

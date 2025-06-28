@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 cd ./go-am-discord-rpc || {
   echo "Directory ./go-am-discord-rpc does not exist. Exiting."
