@@ -23,14 +23,17 @@
 
     .quit-button {
         background-color: red;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        width: 48px;
-        border-radius: 16px;
-        transition: background-color 100ms;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        width: 64px;
+        border-radius: 24px;
+        transition: background-color 200ms;
+        color: whitesmoke;
+        font-weight: 600;
+        font-family: Arial, Helvetica, sans-serif;
     }
 
     .quit-button:hover {
-        background-color: darkred;
+        background-color: rgb(196, 0, 0);
     }
 </style>

@@ -43,6 +43,7 @@
         width: calc(100% - (var(--container-padding) * 2));
         display: flex;
         flex-direction: column;
-        color: whitesmoke;
+        color: black;
+        background-color: whitesmoke;
     }
 </style>
