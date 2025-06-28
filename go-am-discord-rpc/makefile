@@ -20,10 +20,10 @@ ifeq ($(HOST_OS),windows)
 else ifeq ($(HOST_OS),darwin)
 	@echo "macOS detected — building all targets"
 	@$(MAKE) darwin
-	@cmd /c cp "$(subst /,\,$(BINARY_DARWIN_ARM64))" "..\src-tauri\binaries\"
-	@cmd /c cp "$(subst /,\,$(BINARY_DARWIN_AMD64))" "..\src-tauri\binaries\"
-	@cmd /c rm "$(subst /,\,$(BINARY_DARWIN_ARM64))"
-	@cmd /c rm "$(subst /,\,$(BINARY_DARWIN_AMD64))"
+	cp "$(BINARY_DARWIN_ARM64)" "../src-tauri/binaries/"
+	cp "$(BINARY_DARWIN_AMD64)" "../src-tauri/binaries/"
+	rm "$(BINARY_DARWIN_ARM64)"
+	rm "$(BINARY_DARWIN_AMD64)"
 else
 	@echo "Unsupported OS for Darwin cross-compilation — building Windows binary only"
 	@$(MAKE) windows-gnu
