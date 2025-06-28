@@ -26,6 +26,7 @@ if errorlevel 1 (
 
 echo Building Windows dependencies
 dotnet publish -c Release -o ..\src-tauri\
+copy "..\src-tauri\windows-apple-music-info.exe" "..\go-am-discord-rpc"
 
 cd ..
 

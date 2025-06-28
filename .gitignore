@@ -16,3 +16,5 @@ vite.config.ts.timestamp-*
 /src-tauri/*.exe
 /src-tauri/*.pdb
 /src-tauri/dotnet
+/go-am-discord-rpc/*.exe
+/go-am-discord-rpc/*.pdb

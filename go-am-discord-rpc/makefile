@@ -15,7 +15,6 @@ ifeq ($(HOST_OS),windows)
 	@echo "Windows detected — building Windows binary first"
 	@$(MAKE) windows
 	@echo "Copying directory and exe on Windows only..."
-	@cmd /c copy /Y ".\windows-apple-music-info-x86_64-pc-windows-msvc.exe" "..\src-tauri\binaries\"
 	@cmd /c copy /Y "$(subst /,\,$(BINARY_WINDOWS_AMD64))" "..\src-tauri\binaries\"
 	@cmd /c del /Q "$(subst /,\,$(BINARY_WINDOWS_AMD64))"
 else ifeq ($(HOST_OS),darwin)
