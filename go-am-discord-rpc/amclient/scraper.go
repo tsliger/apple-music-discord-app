@@ -5,27 +5,41 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/chromedp/chromedp"
 )
 
-var ctx context.Context
-var scraperCancel context.CancelFunc
+var (
+	ctx           context.Context
+	allocCtx      context.Context
+	allocCancel   context.CancelFunc
+	scraperCancel context.CancelFunc
+)
 
 func CreateScraper() {
-	ctx, scraperCancel = chromedp.NewContext(
-		context.Background(),
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.Flag("disable-gpu", true),
+		chromedp.NoFirstRun,
+		chromedp.NoDefaultBrowserCheck,
 	)
+
+	allocCtx, allocCancel = chromedp.NewExecAllocator(context.Background(), opts...)
+
+	ctx, scraperCancel = chromedp.NewContext(allocCtx)
 }
 
 func scrapeAlbumArt(artist string, album string) (string, error) {
-	var url string
+	tabCtx, tabCancel := chromedp.NewContext(allocCtx)
+	defer tabCancel()
 
-	// Check if multiple artists are being listed by &
-	artists := strings.Split(artist, "&")
+	timeoutCtx, cancel := context.WithTimeout(tabCtx, 10*time.Second)
+	defer cancel()
+
 	album = strings.ReplaceAll(album, "#", "")
 	album = strings.ReplaceAll(album, "&", "")
-
+	artists := strings.Split(artist, "&")
 	if len(artists) > 0 {
 		artist = artists[0]
 	}
@@ -35,30 +49,34 @@ func scrapeAlbumArt(artist string, album string) (string, error) {
 
 	var urls string
 	var ok bool
-	err := chromedp.Run(ctx,
+	err := chromedp.Run(timeoutCtx,
 		chromedp.Navigate(searchURL),
-		chromedp.WaitVisible(".artwork-component"),
-		chromedp.AttributeValue(".artwork-component > picture > source", "srcset", &urls, &ok, chromedp.ByQueryAll),
+		chromedp.WaitVisible(".artwork-component", chromedp.ByQuery),
+		chromedp.AttributeValue(".artwork-component > picture > source", "srcset", &urls, &ok, chromedp.ByQuery),
 	)
-
 	if err != nil {
-		fmt.Println("Error navigating to the website:", err)
+		return "", fmt.Errorf("error navigating: %w", err)
 	}
 
 	re := regexp.MustCompile(`https?://[^,\s]+\.webp`)
-
-	// Find the first match
 	matches := re.FindStringSubmatch(urls)
 
-	if len(matches) > 0 {
-		url = strings.TrimSpace(matches[0])
-	} else {
-		fmt.Println("No .webp URLs found")
+	if len(matches) == 0 {
+		return "", fmt.Errorf("no .webp URLs found")
 	}
 
-	return url, nil
+	return strings.TrimSpace(matches[0]), nil
 }
 
 func cleanScraper() {
-	scraperCancel()
+	CleanScraper()
+}
+
+func CleanScraper() {
+	if scraperCancel != nil {
+		scraperCancel() // ends browser tab
+	}
+	if allocCancel != nil {
+		allocCancel() // shuts down Chrome
+	}
 }

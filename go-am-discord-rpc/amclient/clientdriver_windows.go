@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -41,7 +42,7 @@ import (
 // }
 
 func onNewOutput(line string) {
-	// fmt.Println("New output detected:", line)
+	fmt.Println("New output detected:", line)
 	var parsedTrack playerState
 	output := strings.TrimSpace(line)
 	err := json.Unmarshal([]byte(output), &parsedTrack)
@@ -53,19 +54,26 @@ func onNewOutput(line string) {
 
 	if albumUrl, err := getAlbumArtUrl(parsedTrack); err == nil {
 		parsedTrack.Url = albumUrl
-		fmt.Println("Art scraped: " + albumUrl)
 	}
 
 	if parsedTrack.State == "Playing" {
 		parsedTrack.isPlaying = true
-		parsedTrack.TrackLength = "500"
-		parsedTrack.Playhead = "0"
-		parsedTrack.Playtime = time.Now()
-		// parsedTrack.Url = "https://alamocitygolftrail.com/wp-content/uploads/2022/11/canstockphoto22402523-arcos-creator.com_-1024x1024-1.jpg"
+		parsedTrack.Playtime, err = getPlayheadTime(parsedTrack.Playhead)
 	}
 
 	fmt.Println(parsedTrack)
 	setDiscordActivity(parsedTrack)
+}
+
+func getPlayheadTime(time_float string) (time.Time, error) {
+	parsedFloat, err := strconv.ParseFloat(time_float, 32)
+
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	time_stamp := time.Now().Add(-time.Duration(parsedFloat) * time.Second)
+	return time_stamp, nil
 }
 
 var set mapset.Set[string] = mapset.NewSet[string]()
@@ -98,12 +106,10 @@ func getAlbumArtUrl(state playerState) (string, error) {
 
 		return albumArtUrl, nil
 	}
-
-	return DEFAULT_ALBUM_URI, nil
 }
 
 func Poll(ctx context.Context) {
-	cmd := exec.Command("amclient\\win_client\\windows-apple-music-info.exe")
+	cmd := exec.Command("./windows-apple-music-info.exe")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
