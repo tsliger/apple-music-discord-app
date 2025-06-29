@@ -11,7 +11,7 @@ HOST_OS := $(shell go env GOOS)
 all: build
 
 build:
-@mkdir -p ../src-tauri/binaries
+	@mkdir -p ../src-tauri/binaries
 
 ifeq ($(HOST_OS),windows)
 	@echo "Windows detected — building Windows binary first"
