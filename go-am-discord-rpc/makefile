@@ -38,6 +38,10 @@ $(BINARY_WINDOWS_AMD64):
 	@if not exist $(subst /,\,$(OUTPUT_DIR)) mkdir $(subst /,\,$(OUTPUT_DIR))
 	go build -o $(subst /,\,$@) .
 
+$(BINARY_WINDOWS_AMD64_MAC):
+	@mkdir -p $(OUTPUT_DIR)
+	GOOS=windows GOARCH=amd64 go build -o $@ .
+
 $(BINARY_DARWIN_ARM64):
 	@mkdir -p $(OUTPUT_DIR)
 	GOOS=darwin GOARCH=arm64 go build -o $@ .
