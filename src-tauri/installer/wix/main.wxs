@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="Apple Music Discord RPC" Language="1033" Version="1.0.2" Manufacturer="sliger.dev" UpgradeCode="32f77502-e793-4eef-81dc-a25a8f6fbe2d">
+  <Product Id="*" Name="Apple Music Discord RPC" Language="1033" Version="2.0.0" Manufacturer="sliger.dev" UpgradeCode="32f77502-e793-4eef-81dc-a25a8f6fbe2d">
   
   <Package Platform="x64" InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" />
     <Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
