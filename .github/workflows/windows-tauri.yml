@@ -1,0 +1,59 @@
+name: Build Windows Tauri App
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build Tauri App (Windows)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun runtime
+        run: |
+          irm https://bun.sh/install.ps1 | iex
+        shell: powershell
+
+      - name: Add Bun to PATH
+        run: echo "$env:USERPROFILE\.bun\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+        shell: powershell
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install Node + Rust dependencies
+        run: |
+          bun install
+          cargo install tauri-cli
+
+      - name: Run build_dependancies.bat
+        run: .\build_dependancies.bat
+        shell: cmd
+
+      - name: Build Tauri App
+        run: bun run tauri build
+
+      - name: Upload Windows App Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-tauri-app
+          path: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/windows/*.exe
