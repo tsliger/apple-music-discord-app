@@ -30,8 +30,8 @@
     .switch {
         position: relative;
         display: inline-block;
-        width: 36px;
-        height: 20px;
+        width: 52px;
+        height: 28px;
     }
 
     .switch input {
@@ -55,7 +55,7 @@
     .slider:before {
         position: absolute;
         content: "";
-        height: 12px;
+        height: 20px;
         aspect-ratio: 4/4;
         left: 4px;
         bottom: 4px;
@@ -73,9 +73,10 @@
     }
 
     input:checked + .slider:before {
-        -webkit-transform: translateX(16px);
-        -ms-transform: translateX(16px);
-        transform: translateX(16px);
+        --slide-distance: 23px;
+        -webkit-transform: translateX(var(--slide-distance));
+        -ms-transform: translateX(var(--slide-distance));
+        transform: translateX(var(--slide-distance));
     }
 
     .slider.round {

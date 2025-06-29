@@ -9,3 +9,12 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 /src-tauri/binaries/*
+
+/windows-apple-music-info/windows-apple-music-info/bin/
+/windows-apple-music-info/windows-apple-music-info/obj/
+
+/src-tauri/*.exe
+/src-tauri/*.pdb
+/src-tauri/dotnet
+/go-am-discord-rpc/*.exe
+/go-am-discord-rpc/*.pdb

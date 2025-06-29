@@ -5,8 +5,8 @@
 </script>
 
 <div class="control-panel">
-    <div class="control-section">
-        <span>Start At Login</span>
+    <div class="input-field">
+        <span class="input-text">Start At Login</span>
         <SwitchButton />
     </div>
     <div class="divider"></div>
@@ -21,6 +21,19 @@
         display: flex;
         flex-direction: column;
         font-size: 0.85rem;
+        position: relative;
+        height: 100%;
+    }
+    
+    .input-field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .input-text {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 6px;
     }
 
     .control-section {
@@ -30,6 +43,6 @@
     }
 
     .divider {
-        height: 15px;
+        flex-grow: 1;
     }
 </style>

@@ -9,7 +9,10 @@ use std::process::Command;
 use std::sync::Mutex;
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_shell::ShellExt;
+use tauri::Window;
+use tauri_plugin_shell::process::CommandEvent;
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+use std::process::Stdio;
 
 #[derive(Default)]
 struct AppState {
@@ -28,12 +31,29 @@ fn kill_process(pid: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     #[cfg(windows)]
     {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+
         println!("Sending taskkill to process with PID: {}", pid);
 
-        let mut kill = StdCommand::new("taskkill")
+        let mut kill = Command::new("taskkill")
             .args(["/PID", &pid, "/F"])
+            .creation_flags(CREATE_NO_WINDOW)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
             .spawn()?;
+
         kill.wait()?;
+
+        // Windows specific helper program
+        kill = Command::new("taskkill")
+                    .args(["/IM", "windows-apple-music-info.exe", "/F"])
+                    .creation_flags(CREATE_NO_WINDOW)
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .spawn()?;
+
+        kill.wait()?; 
     }
 
     Ok(())
@@ -42,13 +62,13 @@ fn kill_process(pid: &str) -> Result<(), Box<dyn std::error::Error>> {
 fn execute_polling(app: &AppHandle) {
     let open_port = find_open_port().unwrap();
 
-    let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap();
-    let (mut _rx, mut child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+    let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap().args(["42069"]);
+    let (mut rx, mut child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
 
     // Send port number into std input
-    child.write(open_port.as_bytes()).unwrap();
-
     let rest_endpoint = format!("http://localhost:{}/kill", open_port);
+
+    println!("{}", rest_endpoint);
 
     // Set state
     let state = app.state::<Mutex<AppState>>();
@@ -56,6 +76,22 @@ fn execute_polling(app: &AppHandle) {
 
     state.endpoint = rest_endpoint;
     state.go_child = child.pid();
+
+    // let window = app.get_webview_window("main").unwrap();
+    println!("Port: {}", open_port);
+
+    tauri::async_runtime::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            if let CommandEvent::Stdout(line_bytes) = event {
+                let line = String::from_utf8_lossy(&line_bytes);
+                println!("{}", line);
+                // window.emit("message", Some(format!("'{}'", line)))
+                //     .expect("failed to emit event");
+            }
+        }
+    });
+
+    // println!("{}", child.pid().to_string());
 }
 
 fn find_open_port() -> Option<String> {

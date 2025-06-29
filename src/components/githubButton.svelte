@@ -16,16 +16,16 @@
 
 <style>
     .github-button {
-        width: 20px;
+        width: 30px;
         aspect-ratio: 4/4;
     }
 
-    .github-button:hover svg {
+    /* .github-button:hover svg {
         fill: skyblue !important;
-    }
+    } */
 
     .github-button svg {
-        fill: whitesmoke !important;
+        fill: black !important;
         transition: fill 100ms;
     }
 </style>

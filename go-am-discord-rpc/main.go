@@ -6,74 +6,73 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-var ctx context.Context
-var cancel context.CancelFunc
-
-func pollingProcess() {
-	for {
-		select {
-		case <-ctx.Done():
-			amclient.CloseClient()
-			fmt.Println("Process was cancelled.")
-			return
-		default:
-			amclient.Poll()
-		}
-	}
+func pollingProcess(ctx context.Context) {
+	amclient.Poll(ctx)
+	fmt.Println("Polling process exited.")
 }
 
 func main() {
 	amclient.CreateScraper()
-
-	// Init on termination signal detection
-	createTerminator()
-
-	// Initialize client
 	amclient.NewClient()
-	ctx, cancel = context.WithCancel(context.Background())
 
-	var pString string
-	_, err := fmt.Scan(&pString)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	if err != nil {
-		fmt.Println("Exiting due to port parsing issue.")
-		AppExit()
+	if len(os.Args) < 2 {
+		fmt.Println("Exiting: no port argument provided.")
+		return
 	}
+	port := ":" + os.Args[1]
 
-	port := ":" + pString
+	go pollingProcess(ctx)
 
+	// Gin setup
 	r := gin.Default()
 
-	go pollingProcess()
-
 	r.GET("/kill", func(c *gin.Context) {
-		if cancel != nil {
-			AppExit()
-			c.JSON(http.StatusOK, gin.H{
-				"message": "Killed process.",
-			})
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "No process started.",
-			})
-		}
+		cancel()
+		c.JSON(http.StatusOK, gin.H{"message": "Killed process, shutting down..."})
 	})
 
-	err = r.Run(port)
-
-	if err != nil {
-		AppExit()
+	srv := &http.Server{
+		Addr:    port,
+		Handler: r,
 	}
 
-	defer cancel()
-}
+	// Start server in a goroutine
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Println("Server error:", err)
+		}
+	}()
 
-func AppExit() {
-	amclient.CloseClient()
-	cancel()
-	os.Exit(0)
+	// Signal handling
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-stop
+		fmt.Println("\nReceived OS interrupt signal")
+		amclient.CleanScraper()
+		cancel()
+	}()
+
+	// Wait for context to be canceled
+	<-ctx.Done()
+
+	// Graceful shutdown
+	fmt.Println("Shutting down server...")
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		fmt.Println("Server forced to shutdown:", err)
+	}
+
+	fmt.Println("Exited cleanly.")
 }
