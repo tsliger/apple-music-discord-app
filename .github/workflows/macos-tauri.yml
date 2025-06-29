@@ -1,0 +1,54 @@
+name: Build macOS Tauri App
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build Tauri App (macOS)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install Node + Rust dependencies
+        run: |
+          npm install
+          cargo install tauri-cli
+
+      - name: Run build_dependancies.sh
+        run: ./build_dependancies.sh
+
+      - name: Build Tauri App
+        run: npm run tauri build
+
+      - name: Upload macOS App/Disk Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-tauri-app
+          path: |
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/macos/*.app
