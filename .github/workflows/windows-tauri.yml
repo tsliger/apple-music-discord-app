@@ -33,6 +33,10 @@ jobs:
         with:
           go-version: '1.22'
 
+      - name: Install GNU Make
+        run: choco install make --yes
+        shell: powershell
+
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v4
         with:
