@@ -1,4 +1,4 @@
-name: Build macOS Tauri App
+name: macOS Build
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-macos:
-    name: Build Tauri App (macOS)
+    name: macOS Build
     runs-on: macos-latest
 
     steps:
@@ -79,7 +79,7 @@ jobs:
       - name: Upload macOS App/Disk Image
         uses: actions/upload-artifact@v4
         with:
-          name: macos-tauri-app
+          name: apple-music-discord-rpc-mac
           path: |
             src-tauri/target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/macos/*.app

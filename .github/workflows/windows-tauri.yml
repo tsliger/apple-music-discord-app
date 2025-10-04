@@ -1,4 +1,4 @@
-name: Build Windows Tauri App
+name: Windows Build
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-windows:
-    name: Build Tauri App (Windows)
+    name: Windows Build
     runs-on: windows-latest
 
     steps:
@@ -88,7 +88,7 @@ jobs:
       - name: Upload Windows App Installer
         uses: actions/upload-artifact@v4
         with:
-          name: windows-tauri-app
+          name: apple-music-discord-rpc-windows
           path: |
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/windows/*.exe
