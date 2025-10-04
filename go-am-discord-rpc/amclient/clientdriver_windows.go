@@ -13,34 +13,6 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 )
 
-// func Poll(ctx context.Context) {
-// 	ticker := time.NewTicker(songPollingRate * time.Millisecond)
-// 	defer ticker.Stop()
-
-// 	for {
-// 		select {
-// 		case <-ctx.Done():
-// 			fmt.Println("Poll stopped")
-// 			return
-// 		case <-ticker.C:
-// 			fmt.Println("test")
-
-// 			test := playerState{
-// 				Artist:      "test",
-// 				Album:       "test",
-// 				isPlaying:   true,
-// 				State:       "play",
-// 				TrackLength: "100",
-// 				Playhead:    "20",
-// 				Playtime:    time.Now().UTC(),
-// 				Title:       "test",
-// 			}
-
-// 			setDiscordActivity(test)
-// 		}
-// 	}
-// }
-
 func onNewOutput(line string) {
 	fmt.Println("New output detected:", line)
 	var parsedTrack playerState

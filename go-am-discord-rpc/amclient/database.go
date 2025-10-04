@@ -34,7 +34,7 @@ func initDB(path string) error {
 			CREATE TABLE IF NOT EXISTS artwork_urls (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				artist_album_id INTEGER NOT NULL,
-				freq INTEGER,
+				freq INTEGER DEFAULT 0,
 				url TEXT,
 				FOREIGN KEY (artist_album_id) REFERENCES artist_album(id),
 				UNIQUE(url)
