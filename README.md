@@ -10,8 +10,8 @@
 
 A lightweight Tauri application that displays your current Apple Music song on Discord Rich Presence (RPC).
 
-<p align="center"> <img src="https://i.imgur.com/I2oasJK.png" alt="User interface displayed from taskbar." /> </p>
-<p align="center"> <img src="https://i.imgur.com/o1ovQCH.png" alt="Music details displayed in Discord." /> </p>
+<p align="center"> <img src=".github/images/windows_display.webp" alt="User interface displayed from taskbar." /> </p>
+<p align="center"> <img src=".github/images/discord_side.webp" alt="Music details displayed in Discord." /> </p>
 
 
 ## 🚀 Features
