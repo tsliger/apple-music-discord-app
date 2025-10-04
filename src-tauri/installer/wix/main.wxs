@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*" Name="Apple Music Discord RPC" Language="1033" Version="2.0.0" Manufacturer="sliger.dev" UpgradeCode="32f77502-e793-4eef-81dc-a25a8f6fbe2d">
-  
+
   <Package Platform="x64" InstallerVersion="500" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" />
     <Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
     <Icon Id="icon.ico" SourceFile="..\..\resources\icon.ico" />
@@ -45,7 +45,7 @@
 
         <!-- Embed .NET Runtime Installer -->
         <Component Id="DotNetRuntime" Guid="4fed3514-3de9-4a90-8a1a-6dd25563fbb5" Win64="yes">
-            <File Id="DotNetInstaller" Source="..\..\dotnet\dotnet-runtime-8.0.17-win-x64.exe" />
+            <File Id="DotNetInstaller" Source="..\..\dotnet\dotnet-runtime-8.0.20-win-x64.exe" />
         </Component>
     </DirectoryRef>
 
