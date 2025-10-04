@@ -7,7 +7,7 @@ require (
 	github.com/chromedp/chromedp v0.12.1
 	github.com/deckarep/golang-set/v2 v2.7.0
 	github.com/gin-gonic/gin v1.10.0
-	github.com/tsliger/go-discord-rpc v0.2.3-beta
+	github.com/tsliger/go-discord-rpc v0.2.4-beta
 )
 
 require (
