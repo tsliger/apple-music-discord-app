@@ -81,10 +81,12 @@ func Contains(slice []string, str string) bool {
 var set mapset.Set[string] = mapset.NewSet[string]()
 
 func getAlbumArtUrl(state playerState) (string, error) {
-	cachedUrl, err := getUrlFromCache(state.Artist, state.Album)
+	// cachedUrl, err := getUrlFromCache(state.Artist, state.Album)
+	savedUrl, err := getMaxFreqUrl(state.Artist, state.Album)
+
 	if err == nil {
 		// Cache hit, return the cached URL
-		return cachedUrl, nil
+		return savedUrl, nil
 	}
 
 	contains := set.Contains(state.Artist + state.Album)
@@ -93,16 +95,38 @@ func getAlbumArtUrl(state playerState) (string, error) {
 	} else {
 		set.Add(state.Artist + state.Album)
 		go func() {
-			albumArtUrl, err := scrapeAlbumArt(state.Artist, state.Album)
+			inCache := false
+
+			albumArtUrl, err := getUrlFromCache(state.Artist, state.Album)
+			if err != nil {
+				albumArtUrl, err = getMaxFreqUrl(state.Artist, state.Album)
+				if err != nil {
+					albumArtUrl, err = scrapeAlbumArt(state.Artist, state.Album)
+				}
+			} else {
+				inCache = true
+			}
+
 			if err != nil {
 				// If scraping fails, fall back to a default album art URL
 				albumArtUrl = DEFAULT_ALBUM_URI
 			}
 
-			if err := setUrlCache(state.Artist, state.Album, albumArtUrl); err != nil {
-				// Log or handle the error if caching fails
-				// This should ideally be non-blocking if it's not crucial
-				fmt.Printf("Failed to cache album art URL for %s - %s: %v\n", state.Artist, state.Album, err)
+			if inCache == false {
+				if err := setUrlCache(state.Artist, state.Album, albumArtUrl); err != nil {
+					// Log or handle the error if caching fails
+					// This should ideally be non-blocking if it's not crucial
+					fmt.Printf("Failed to cache album art URL for %s - %s: %v\n", state.Artist, state.Album, err)
+				} else {
+					fmt.Printf("Inserted %s - %s into Cache", state.Artist, state.Album)
+				}
+			}
+
+			// TODO: set database value instead
+			if err := createDbEntry(state.Artist, state.Album, albumArtUrl); err != nil {
+				fmt.Printf("Failed to create db entry for URL %s - %s: %v\n", state.Artist, state.Album, err)
+			} else {
+				fmt.Printf("Inserted %s - %s into DB", state.Artist, state.Album)
 			}
 			set.Remove(state.Artist + state.Album)
 		}()

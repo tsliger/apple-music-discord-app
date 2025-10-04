@@ -20,6 +20,7 @@ func NewClient() {
 	go func() {
 		defer wg.Done()
 		createCache()
+		initDB("./app_data.db")
 	}()
 
 	go func() {
@@ -34,4 +35,5 @@ func CloseClient() {
 	closeDiscordClient()
 	cleanScraper()
 	cleanCache()
+	closeDB()
 }

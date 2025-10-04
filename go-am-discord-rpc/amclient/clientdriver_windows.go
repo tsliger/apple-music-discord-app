@@ -85,6 +85,11 @@ func getAlbumArtUrl(state playerState) (string, error) {
 		return cachedUrl, nil
 	}
 
+	storedUrl, err := getMaxFreqUrl(state.Artist, state.Album)
+	if err == nil {
+		return storedUrl, nil
+	}
+
 	contains := set.Contains(state.Artist + state.Album)
 	if contains {
 		return DEFAULT_ALBUM_URI, nil
@@ -97,11 +102,20 @@ func getAlbumArtUrl(state playerState) (string, error) {
 			albumArtUrl = DEFAULT_ALBUM_URI
 		}
 
+		if err := createDbEntry(state.Artist, state.Album, albumArtUrl); err != nil {
+			fmt.Printf("Failed to create db entry for URL %s - %s: %v\n", state.Artist, state.Album, err)
+		} else {
+			fmt.Printf("Inserted %s - %s into DB", state.Artist, state.Album)
+		}
+
 		if err := setUrlCache(state.Artist, state.Album, albumArtUrl); err != nil {
 			// Log or handle the error if caching fails
 			// This should ideally be non-blocking if it's not crucial
 			fmt.Printf("Failed to cache album art URL for %s - %s: %v\n", state.Artist, state.Album, err)
+		} else {
+			fmt.Printf("Inserted %s - %s into Cache", state.Artist, state.Album)
 		}
+	}
 		set.Remove(state.Artist + state.Album)
 
 		return albumArtUrl, nil

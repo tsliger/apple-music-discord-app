@@ -22,11 +22,11 @@ var cacheMutex sync.Mutex
 func createCache() {
 	cache, _ = bigcache.New(context.Background(), bigcache.DefaultConfig(30*time.Minute))
 
-	combinedPath, err := getFolderPath()
+	// combinedPath, err := getFolderPath()
 
-	if err == nil {
-		loadCacheFile(combinedPath)
-	}
+	// if err == nil {
+	// 	loadCacheFile(combinedPath)
+	// }
 }
 
 func loadCacheFile(filename string) error {
@@ -139,13 +139,13 @@ func getFolderPath() (string, error) {
 }
 
 func cleanCache() error {
-	combinedPath, err := getFolderPath()
+	// combinedPath, err := getFolderPath()
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	saveCacheFile(combinedPath)
+	// saveCacheFile(combinedPath)
 
 	return nil
 }
