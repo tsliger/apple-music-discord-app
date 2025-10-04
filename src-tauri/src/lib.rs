@@ -8,11 +8,9 @@ use std::net::TcpListener;
 use std::process::Command;
 use std::sync::Mutex;
 use tauri_plugin_positioner::{Position, WindowExt};
-use tauri_plugin_shell::ShellExt;
-use tauri::Window;
 use tauri_plugin_shell::process::CommandEvent;
+use tauri_plugin_shell::ShellExt;
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
-use std::process::Stdio;
 
 #[derive(Default)]
 struct AppState {
@@ -47,13 +45,13 @@ fn kill_process(pid: &str) -> Result<(), Box<dyn std::error::Error>> {
 
         // Windows specific helper program
         kill = Command::new("taskkill")
-                    .args(["/IM", "windows-apple-music-info.exe", "/F"])
-                    .creation_flags(CREATE_NO_WINDOW)
-                    .stdout(Stdio::null())
-                    .stderr(Stdio::null())
-                    .spawn()?;
+            .args(["/IM", "windows-apple-music-info.exe", "/F"])
+            .creation_flags(CREATE_NO_WINDOW)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()?;
 
-        kill.wait()?; 
+        kill.wait()?;
     }
 
     Ok(())
@@ -62,8 +60,12 @@ fn kill_process(pid: &str) -> Result<(), Box<dyn std::error::Error>> {
 fn execute_polling(app: &AppHandle) {
     let open_port = find_open_port().unwrap();
 
-    let sidecar_command = app.shell().sidecar("go-am-discord-rpc").unwrap().args(["42069"]);
-    let (mut rx, mut child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+    let sidecar_command = app
+        .shell()
+        .sidecar("go-am-discord-rpc")
+        .unwrap()
+        .args(["42069"]);
+    let (mut rx, child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
 
     // Send port number into std input
     let rest_endpoint = format!("http://localhost:{}/kill", open_port);
