@@ -6,7 +6,9 @@ use tauri::{
 
 use std::net::TcpListener;
 use std::process::Command;
+use std::process::Stdio;
 use std::sync::Mutex;
+use tauri::Window;
 use tauri_plugin_positioner::{Position, WindowExt};
 use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
@@ -65,7 +67,7 @@ fn execute_polling(app: &AppHandle) {
         .sidecar("go-am-discord-rpc")
         .unwrap()
         .args(["42069"]);
-    let (mut rx, child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+    let (mut rx, mut child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
 
     // Send port number into std input
     let rest_endpoint = format!("http://localhost:{}/kill", open_port);
