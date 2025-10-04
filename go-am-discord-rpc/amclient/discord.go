@@ -28,6 +28,7 @@ func setDiscordActivity(info playerState) error {
 		endTime := time.Now().Unix() + int64(floatVal+0.5) - int64(playHeadFloat)
 
 		data := &discordrpc.ActivityData{
+			Name:    info.Artist,
 			State:   info.Artist,
 			Type:    discordrpc.LISTENTING_TYPE,
 			Details: info.Title,
