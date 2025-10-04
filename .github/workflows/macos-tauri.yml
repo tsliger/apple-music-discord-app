@@ -39,10 +39,6 @@ jobs:
           bun install
           cargo install tauri-cli
 
-      - name: Chmod Script for tauri-build
-        run: |
-          chmod +x src-tauri/target/release/bundle/dmg/bundle_dmg.sh
-
       - name: Run build_dependancies.sh
         run: ./build_dependancies.sh
 
