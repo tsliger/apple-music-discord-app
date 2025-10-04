@@ -1,18 +1,18 @@
 
 <div align="center">
 
-[![Build macOS Tauri App](https://github.com/tsliger/apple-music-discord-app/actions/workflows/macos-tauri.yml/badge.svg)](https://github.com/tsliger/apple-music-discord-app/actions/workflows/macos-tauri.yml)
-[![Build Windows Tauri App](https://github.com/tsliger/apple-music-discord-app/actions/workflows/windows-tauri.yml/badge.svg)](https://github.com/tsliger/apple-music-discord-app/actions/workflows/windows-tauri.yml)
-
-</div>
-
-# apple-music-discord-app
+# 🎵 Apple Music Discord App
 
 A lightweight Tauri application that displays your current Apple Music song on Discord Rich Presence (RPC).
 
-<p align="center"> <img src=".github/images/windows_display.webp" alt="User interface displayed from taskbar." /> </p>
-<p align="center"> <img src=".github/images/discord_side.webp" alt="Music details displayed in Discord." /> </p>
+[![Build macOS](https://github.com/tsliger/apple-music-discord-app/actions/workflows/macos-tauri.yml/badge.svg)](https://github.com/tsliger/apple-music-discord-app/actions/workflows/macos-tauri.yml)
+[![Build Windows](https://github.com/tsliger/apple-music-discord-app/actions/workflows/windows-tauri.yml/badge.svg)](https://github.com/tsliger/apple-music-discord-app/actions/workflows/windows-tauri.yml)
 
+</div>
+<div align="center">
+  <img src=".github/images/windows_display.webp" alt="Windows taskbar view" height="300px" />
+  <img src=".github/images/discord_side.webp" alt="Discord Rich Presence" height="300px" />
+</div>
 
 ## 🚀 Features
 
