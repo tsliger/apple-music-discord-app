@@ -1,4 +1,11 @@
 
+<div align="center">
+
+[![Build macOS Tauri App](https://github.com/tsliger/apple-music-discord-app/actions/workflows/macos-tauri.yml/badge.svg)](https://github.com/tsliger/apple-music-discord-app/actions/workflows/macos-tauri.yml)
+[![Build Windows Tauri App](https://github.com/tsliger/apple-music-discord-app/actions/workflows/windows-tauri.yml/badge.svg)](https://github.com/tsliger/apple-music-discord-app/actions/workflows/windows-tauri.yml)
+
+</div>
+
 # apple-music-discord-app
 
 A lightweight Tauri application that displays your current Apple Music song on Discord Rich Presence (RPC).
@@ -14,7 +21,7 @@ A lightweight Tauri application that displays your current Apple Music song on D
 -   **Autostart**: Option to start app on computer load.
 -   **Runs In Background**: App will persist in the background and appear in taskbar.
 -   **Lightweight**: Built with Tauri for minimal resource usage.
--   **macOS Support**: Currently available for macOS, with Windows support coming soon!
+-   **macOS and Windows Support**: Currently available for macOS and Windows.
 
 ## 🛠️ Built With
 
@@ -68,7 +75,7 @@ A lightweight Tauri application that displays your current Apple Music song on D
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you’d like to help with Windows support or suggest features, feel free to open an issue or submit a pull request.
+Contributions are welcome! Feel free to open an issue or submit a pull request.
 
 ## 📝 License
 

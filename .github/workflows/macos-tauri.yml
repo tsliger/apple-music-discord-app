@@ -27,17 +27,21 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: "1.22"
 
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
       - name: Install Node + Rust dependencies
         run: |
           bun install
           cargo install tauri-cli
+
+      - name: Chmod Script for tauri-build
+        run: |
+          chmod +x src-tauri/target/release/bundle/dmg/bundle_dmg.sh
 
       - name: Run build_dependancies.sh
         run: ./build_dependancies.sh
