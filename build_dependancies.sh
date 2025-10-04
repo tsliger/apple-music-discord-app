@@ -2,7 +2,7 @@
 
 URL="https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-8.0.17-windows-x64-installer"
 DEST_DIR="./src-tauri/dotnet"
-FILENAME="dotnet-runtime-8.0.17-win-x64.exe"
+FILENAME="dotnet-runtime-8.0.20-win-x64.exe"
 DEST="$DEST_DIR/$FILENAME"
 
 # Create the folder if it doesn't exist

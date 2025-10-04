@@ -1,9 +1,9 @@
 @echo off
 
 setlocal
-set URL=https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-8.0.414-windows-x64-installer
+set URL=https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-8.0.20-windows-x64-installer
 set DEST_DIR=.\src-tauri\dotnet
-set FILENAME=dotnet-runtime-8.0.17-win-x64.exe
+set FILENAME=dotnet-runtime-8.0.20-win-x64.exe
 set DEST=%DEST_DIR%\%FILENAME%
 
 :: Create the folder if it doesn't exist
