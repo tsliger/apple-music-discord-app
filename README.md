@@ -37,8 +37,10 @@ A lightweight Tauri application that displays your current Apple Music song on D
 -   Bun >= 1.1.29
 -   Rust >= 1.84
 -   Go >= 1.23.1
+-   (Windows only) .NET SDK >= 8.0
+-   (Windows only) GNU Make (can be installed via [Chocolatey](https://chocolatey.org/) with ```choco install make```)
 -   Discord installed and running.
-### Steps
+### macOS Steps
 
 1.  Clone the repository:
 
@@ -67,6 +69,39 @@ A lightweight Tauri application that displays your current Apple Music song on D
     ./build_dependancies.sh
     bun run tauri build
     ```
+### Windows Build Steps
+
+1.  Clone the repository:
+
+    ```PowerShell
+    git clone https://github.com/your-username/apple-music-discord-rpc.git
+    cd apple-music-discord-rpc
+    ```
+    
+2.  Install dependencies:
+   
+	 ```PowerShell
+    bun install
+    ```
+
+3. Build Go dependencies:
+
+   ```PowerShell
+   .\build_dependencies.bat
+   ```
+
+4. Run the app in development mode:
+
+   ```PowerShell
+   bun run tauri dev
+   ```
+
+5. Build the app for production:
+
+   ```PowerShell
+   bun run tauri build
+   ```
+      
 ## 📖 Usage
 
 1.  Open the app on your macOS device and start playing a track on Apple Music.
