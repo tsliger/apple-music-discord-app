@@ -87,10 +87,10 @@ func getAlbumArtUrl(state playerState) (string, error) {
 		} else {
 			fmt.Printf("Inserted %s - %s into Cache", state.Artist, state.Album)
 		}
-	}
-	set.Remove(state.Artist + state.Album)
 
-	return DEFAULT_ALBUM_URI, nil
+		set.Remove(state.Artist + state.Album)
+		return albumArtUrl, nil
+	}
 }
 
 func Poll(ctx context.Context) {
